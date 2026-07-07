@@ -1,0 +1,28 @@
+{
+  "_comment": "示例采集原始数据 - 关键词=蓝牙耳机, 3 平台各 30 条 (这里展示前 6 条/平台作示例)",
+  "keyword": "蓝牙耳机",
+  "generated_at": "2026-07-07T10:00:00",
+  "platforms": ["jd", "taobao", "pdd"],
+  "products": [
+    {"platform": "jd", "title": "小米 蓝牙耳机 旗舰版 256G", "price": 199.00, "sales": 25800, "shop": "小米官方旗舰店", "shop_rating": 4.9, "url": "https://item.m.jd.com/product/100012345678.html", "sku_id": "100012345678"},
+    {"platform": "jd", "title": "华为 蓝牙耳机 Pro 128G", "price": 329.00, "sales": 18200, "shop": "华为自营旗舰店", "shop_rating": 4.9, "url": "https://item.m.jd.com/product/100023456789.html", "sku_id": "100023456789"},
+    {"platform": "jd", "title": "JBL 蓝牙耳机 青春版 64G", "price": 159.00, "sales": 9800, "shop": "JBL京东自营店", "shop_rating": 4.8, "url": "https://item.m.jd.com/product/100034567890.html", "sku_id": "100034567890"},
+    {"platform": "jd", "title": "苹果 蓝牙耳机 Max 512G", "price": 1599.00, "sales": 6200, "shop": "Apple官方旗舰店", "shop_rating": 4.9, "url": "https://item.m.jd.com/product/100045678901.html", "sku_id": "100045678901"},
+    {"platform": "jd", "title": "漫步者 蓝牙耳机 标准版 蓝牙5.3", "price": 89.00, "sales": 45200, "shop": "漫步者旗舰店", "shop_rating": 4.7, "url": "https://item.m.jd.com/product/100056789012.html", "sku_id": "100056789012"},
+    {"platform": "jd", "title": "倍思 蓝牙耳机 Ultra USB3.0", "price": 119.00, "sales": 12300, "shop": "倍思官方店", "shop_rating": 4.6, "url": "https://item.m.jd.com/product/100067890123.html", "sku_id": "100067890123"},
+
+    {"platform": "taobao", "title": "小米 蓝牙耳机 旗舰版 256G", "price": 189.00, "sales": 31200, "shop": "小米官方旗舰店", "shop_rating": 4.8, "url": "https://item.taobao.com/item.htm?id=200012345678", "sku_id": "200012345678"},
+    {"platform": "taobao", "title": "华为 蓝牙耳机 Pro 128G", "price": 309.00, "sales": 22800, "shop": "华为天猫旗舰店", "shop_rating": 4.9, "url": "https://item.taobao.com/item.htm?id=200023456789", "sku_id": "200023456789"},
+    {"platform": "taobao", "title": "Bose 蓝牙耳机 Plus 1T", "price": 1299.00, "sales": 3500, "shop": "Bose官方店", "shop_rating": 4.9, "url": "https://item.taobao.com/item.htm?id=200034567890", "sku_id": "200034567890"},
+    {"platform": "taobao", "title": "Anker 蓝牙耳机 青春版 8+128", "price": 149.00, "sales": 18500, "shop": "Anker数码专营店", "shop_rating": 4.8, "url": "https://item.taobao.com/item.htm?id=200045678901", "sku_id": "200045678901"},
+    {"platform": "taobao", "title": "绿联 蓝牙耳机 二代 12+256", "price": 79.00, "sales": 56800, "shop": "绿联旗舰店", "shop_rating": 4.7, "url": "https://item.taobao.com/item.htm?id=200056789012", "sku_id": "200056789012"},
+    {"platform": "taobao", "title": "索尼 蓝牙耳机 三代 16+512", "price": 899.00, "sales": 4200, "shop": "索尼官方旗舰店", "shop_rating": 4.9, "url": "https://item.taobao.com/item.htm?id=200067890123", "sku_id": "200067890123"},
+
+    {"platform": "pdd", "title": "小米 蓝牙耳机 旗舰版 256G", "price": 169.00, "sales": 88200, "shop": "百亿补贴数码", "shop_rating": 4.7, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300012345678", "sku_id": "300012345678"},
+    {"platform": "pdd", "title": "华为 蓝牙耳机 Pro 128G", "price": 289.00, "sales": 45600, "shop": "华为品牌馆", "shop_rating": 4.8, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300023456789", "sku_id": "300023456789"},
+    {"platform": "pdd", "title": "realme 蓝牙耳机 青春版 64G", "price": 99.00, "sales": 67800, "shop": "realme官方", "shop_rating": 4.6, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300034567890", "sku_id": "300034567890"},
+    {"platform": "pdd", "title": "JBL 蓝牙耳机 S 限量版", "price": 139.00, "sales": 22300, "shop": "JBL百亿补贴", "shop_rating": 4.7, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300045678901", "sku_id": "300045678901"},
+    {"platform": "pdd", "title": "魅族 蓝牙耳机 T 定制版", "price": 69.00, "sales": 94500, "shop": "魅族数码专营", "shop_rating": 4.5, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300056789012", "sku_id": "300056789012"},
+    {"platform": "pdd", "title": "一加 蓝牙耳机 X 2024款", "price": 199.00, "sales": 15600, "shop": "一加官方店", "shop_rating": 4.7, "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300067890123", "sku_id": "300067890123"}
+  ]
+}

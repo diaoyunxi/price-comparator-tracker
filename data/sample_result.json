@@ -1,0 +1,581 @@
+{
+  "keyword": "蓝牙耳机",
+  "platforms": [
+    "jd",
+    "taobao",
+    "pdd"
+  ],
+  "generated_at": "2026-07-07T10:00:00",
+  "_comment": "由 tools/gen_sample.py 从 sample_products.json 自动生成, 作为 Web 初始化展示示例",
+  "clean_stats": {
+    "input": 18,
+    "invalid_price": 0,
+    "empty_title": 0,
+    "duplicates": 0,
+    "output": 18
+  },
+  "products": [
+    {
+      "platform": "pdd",
+      "title": "魅族 蓝牙耳机 T 定制版",
+      "price": 69.0,
+      "sales": 94500,
+      "shop": "魅族数码专营",
+      "shop_rating": 4.5,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300056789012",
+      "image_url": "",
+      "sku_id": "300056789012",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "绿联 蓝牙耳机 二代 12+256",
+      "price": 79.0,
+      "sales": 56800,
+      "shop": "绿联旗舰店",
+      "shop_rating": 4.7,
+      "url": "https://item.taobao.com/item.htm?id=200056789012",
+      "image_url": "",
+      "sku_id": "200056789012",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "漫步者 蓝牙耳机 标准版 蓝牙5.3",
+      "price": 89.0,
+      "sales": 45200,
+      "shop": "漫步者旗舰店",
+      "shop_rating": 4.7,
+      "url": "https://item.m.jd.com/product/100056789012.html",
+      "image_url": "",
+      "sku_id": "100056789012",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "pdd",
+      "title": "realme 蓝牙耳机 青春版 64G",
+      "price": 99.0,
+      "sales": 67800,
+      "shop": "realme官方",
+      "shop_rating": 4.6,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300034567890",
+      "image_url": "",
+      "sku_id": "300034567890",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "倍思 蓝牙耳机 Ultra USB3.0",
+      "price": 119.0,
+      "sales": 12300,
+      "shop": "倍思官方店",
+      "shop_rating": 4.6,
+      "url": "https://item.m.jd.com/product/100067890123.html",
+      "image_url": "",
+      "sku_id": "100067890123",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "pdd",
+      "title": "JBL 蓝牙耳机 S 限量版",
+      "price": 139.0,
+      "sales": 22300,
+      "shop": "JBL百亿补贴",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300045678901",
+      "image_url": "",
+      "sku_id": "300045678901",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "Anker 蓝牙耳机 青春版 8+128",
+      "price": 149.0,
+      "sales": 18500,
+      "shop": "Anker数码专营店",
+      "shop_rating": 4.8,
+      "url": "https://item.taobao.com/item.htm?id=200045678901",
+      "image_url": "",
+      "sku_id": "200045678901",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "JBL 蓝牙耳机 青春版 64G",
+      "price": 159.0,
+      "sales": 9800,
+      "shop": "JBL京东自营店",
+      "shop_rating": 4.8,
+      "url": "https://item.m.jd.com/product/100034567890.html",
+      "image_url": "",
+      "sku_id": "100034567890",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "pdd",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 169.0,
+      "sales": 88200,
+      "shop": "百亿补贴数码",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300012345678",
+      "image_url": "",
+      "sku_id": "300012345678",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 189.0,
+      "sales": 31200,
+      "shop": "小米官方旗舰店",
+      "shop_rating": 4.8,
+      "url": "https://item.taobao.com/item.htm?id=200012345678",
+      "image_url": "",
+      "sku_id": "200012345678",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 199.0,
+      "sales": 25800,
+      "shop": "小米官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100012345678.html",
+      "image_url": "",
+      "sku_id": "100012345678",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "pdd",
+      "title": "一加 蓝牙耳机 X 2024款",
+      "price": 199.0,
+      "sales": 15600,
+      "shop": "一加官方店",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300067890123",
+      "image_url": "",
+      "sku_id": "300067890123",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "pdd",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 289.0,
+      "sales": 45600,
+      "shop": "华为品牌馆",
+      "shop_rating": 4.8,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300023456789",
+      "image_url": "",
+      "sku_id": "300023456789",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 309.0,
+      "sales": 22800,
+      "shop": "华为天猫旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200023456789",
+      "image_url": "",
+      "sku_id": "200023456789",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 329.0,
+      "sales": 18200,
+      "shop": "华为自营旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100023456789.html",
+      "image_url": "",
+      "sku_id": "100023456789",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "索尼 蓝牙耳机 三代 16+512",
+      "price": 899.0,
+      "sales": 4200,
+      "shop": "索尼官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200067890123",
+      "image_url": "",
+      "sku_id": "200067890123",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "taobao",
+      "title": "Bose 蓝牙耳机 Plus 1T",
+      "price": 1299.0,
+      "sales": 3500,
+      "shop": "Bose官方店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200034567890",
+      "image_url": "",
+      "sku_id": "200034567890",
+      "fetched_at": "2026-07-07T13:31:21"
+    },
+    {
+      "platform": "jd",
+      "title": "苹果 蓝牙耳机 Max 512G",
+      "price": 1599.0,
+      "sales": 6200,
+      "shop": "Apple官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100045678901.html",
+      "image_url": "",
+      "sku_id": "100045678901",
+      "fetched_at": "2026-07-07T13:31:21"
+    }
+  ],
+  "platform_stats": [
+    {
+      "platform": "拼多多",
+      "count": 6,
+      "avg_price": 160.67,
+      "min_price": 69.0,
+      "max_price": 289.0,
+      "median_price": 154.0,
+      "avg_sales": 55666,
+      "avg_rating": 4.67
+    },
+    {
+      "platform": "淘宝",
+      "count": 6,
+      "avg_price": 487.33,
+      "min_price": 79.0,
+      "max_price": 1299.0,
+      "median_price": 249.0,
+      "avg_sales": 22833,
+      "avg_rating": 4.83
+    },
+    {
+      "platform": "京东",
+      "count": 6,
+      "avg_price": 415.67,
+      "min_price": 89.0,
+      "max_price": 1599.0,
+      "median_price": 179.0,
+      "avg_sales": 19583,
+      "avg_rating": 4.8
+    }
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "score": 82.48,
+      "reason": "价格处于低位 / 销量领先",
+      "product": {
+        "platform": "pdd",
+        "title": "小米 蓝牙耳机 旗舰版 256G",
+        "price": 169.0,
+        "sales": 88200,
+        "shop": "百亿补贴数码",
+        "shop_rating": 4.7,
+        "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300012345678",
+        "image_url": "",
+        "sku_id": "300012345678",
+        "fetched_at": "2026-07-07T13:31:21"
+      }
+    },
+    {
+      "rank": 2,
+      "score": 75.0,
+      "reason": "价格处于低位 / 销量领先",
+      "product": {
+        "platform": "pdd",
+        "title": "魅族 蓝牙耳机 T 定制版",
+        "price": 69.0,
+        "sales": 94500,
+        "shop": "魅族数码专营",
+        "shop_rating": 4.5,
+        "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300056789012",
+        "image_url": "",
+        "sku_id": "300056789012",
+        "fetched_at": "2026-07-07T13:31:21"
+      }
+    },
+    {
+      "rank": 3,
+      "score": 74.78,
+      "reason": "价格处于低位",
+      "product": {
+        "platform": "taobao",
+        "title": "绿联 蓝牙耳机 二代 12+256",
+        "price": 79.0,
+        "sales": 56800,
+        "shop": "绿联旗舰店",
+        "shop_rating": 4.7,
+        "url": "https://item.taobao.com/item.htm?id=200056789012",
+        "image_url": "",
+        "sku_id": "200056789012",
+        "fetched_at": "2026-07-07T13:31:21"
+      }
+    },
+    {
+      "rank": 4,
+      "score": 73.53,
+      "reason": "价格处于低位 / 店铺评分高",
+      "product": {
+        "platform": "jd",
+        "title": "小米 蓝牙耳机 旗舰版 256G",
+        "price": 199.0,
+        "sales": 25800,
+        "shop": "小米官方旗舰店",
+        "shop_rating": 4.9,
+        "url": "https://item.m.jd.com/product/100012345678.html",
+        "image_url": "",
+        "sku_id": "100012345678",
+        "fetched_at": "2026-07-07T13:31:21"
+      }
+    },
+    {
+      "rank": 5,
+      "score": 71.57,
+      "reason": "价格处于低位 / 销量领先",
+      "product": {
+        "platform": "pdd",
+        "title": "realme 蓝牙耳机 青春版 64G",
+        "price": 99.0,
+        "sales": 67800,
+        "shop": "realme官方",
+        "shop_rating": 4.6,
+        "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300034567890",
+        "image_url": "",
+        "sku_id": "300034567890",
+        "fetched_at": "2026-07-07T13:31:21"
+      }
+    }
+  ],
+  "compare_table": [
+    {
+      "platform": "pdd",
+      "title": "魅族 蓝牙耳机 T 定制版",
+      "price": 69.0,
+      "sales": 94500,
+      "shop": "魅族数码专营",
+      "shop_rating": 4.5,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300056789012",
+      "image_url": "",
+      "url_hash": "612af837a12a"
+    },
+    {
+      "platform": "taobao",
+      "title": "绿联 蓝牙耳机 二代 12+256",
+      "price": 79.0,
+      "sales": 56800,
+      "shop": "绿联旗舰店",
+      "shop_rating": 4.7,
+      "url": "https://item.taobao.com/item.htm?id=200056789012",
+      "image_url": "",
+      "url_hash": "693661387183"
+    },
+    {
+      "platform": "jd",
+      "title": "漫步者 蓝牙耳机 标准版 蓝牙5.3",
+      "price": 89.0,
+      "sales": 45200,
+      "shop": "漫步者旗舰店",
+      "shop_rating": 4.7,
+      "url": "https://item.m.jd.com/product/100056789012.html",
+      "image_url": "",
+      "url_hash": "c35dfa857d1e"
+    },
+    {
+      "platform": "pdd",
+      "title": "realme 蓝牙耳机 青春版 64G",
+      "price": 99.0,
+      "sales": 67800,
+      "shop": "realme官方",
+      "shop_rating": 4.6,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300034567890",
+      "image_url": "",
+      "url_hash": "7850a4092de9"
+    },
+    {
+      "platform": "jd",
+      "title": "倍思 蓝牙耳机 Ultra USB3.0",
+      "price": 119.0,
+      "sales": 12300,
+      "shop": "倍思官方店",
+      "shop_rating": 4.6,
+      "url": "https://item.m.jd.com/product/100067890123.html",
+      "image_url": "",
+      "url_hash": "fad24c931da0"
+    },
+    {
+      "platform": "pdd",
+      "title": "JBL 蓝牙耳机 S 限量版",
+      "price": 139.0,
+      "sales": 22300,
+      "shop": "JBL百亿补贴",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300045678901",
+      "image_url": "",
+      "url_hash": "88d34bc398f2"
+    },
+    {
+      "platform": "taobao",
+      "title": "Anker 蓝牙耳机 青春版 8+128",
+      "price": 149.0,
+      "sales": 18500,
+      "shop": "Anker数码专营店",
+      "shop_rating": 4.8,
+      "url": "https://item.taobao.com/item.htm?id=200045678901",
+      "image_url": "",
+      "url_hash": "a0c5d47e9413"
+    },
+    {
+      "platform": "jd",
+      "title": "JBL 蓝牙耳机 青春版 64G",
+      "price": 159.0,
+      "sales": 9800,
+      "shop": "JBL京东自营店",
+      "shop_rating": 4.8,
+      "url": "https://item.m.jd.com/product/100034567890.html",
+      "image_url": "",
+      "url_hash": "d644b7baa60a"
+    },
+    {
+      "platform": "pdd",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 169.0,
+      "sales": 88200,
+      "shop": "百亿补贴数码",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300012345678",
+      "image_url": "",
+      "url_hash": "8e397b8d09f6"
+    },
+    {
+      "platform": "taobao",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 189.0,
+      "sales": 31200,
+      "shop": "小米官方旗舰店",
+      "shop_rating": 4.8,
+      "url": "https://item.taobao.com/item.htm?id=200012345678",
+      "image_url": "",
+      "url_hash": "83ed95c9cd2d"
+    },
+    {
+      "platform": "jd",
+      "title": "小米 蓝牙耳机 旗舰版 256G",
+      "price": 199.0,
+      "sales": 25800,
+      "shop": "小米官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100012345678.html",
+      "image_url": "",
+      "url_hash": "0d7d27958ec1"
+    },
+    {
+      "platform": "pdd",
+      "title": "一加 蓝牙耳机 X 2024款",
+      "price": 199.0,
+      "sales": 15600,
+      "shop": "一加官方店",
+      "shop_rating": 4.7,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300067890123",
+      "image_url": "",
+      "url_hash": "9f55a87d379f"
+    },
+    {
+      "platform": "pdd",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 289.0,
+      "sales": 45600,
+      "shop": "华为品牌馆",
+      "shop_rating": 4.8,
+      "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300023456789",
+      "image_url": "",
+      "url_hash": "7227d0ccfce1"
+    },
+    {
+      "platform": "taobao",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 309.0,
+      "sales": 22800,
+      "shop": "华为天猫旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200023456789",
+      "image_url": "",
+      "url_hash": "9c0db6285229"
+    },
+    {
+      "platform": "jd",
+      "title": "华为 蓝牙耳机 Pro 128G",
+      "price": 329.0,
+      "sales": 18200,
+      "shop": "华为自营旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100023456789.html",
+      "image_url": "",
+      "url_hash": "80e7d51ac8f9"
+    },
+    {
+      "platform": "taobao",
+      "title": "索尼 蓝牙耳机 三代 16+512",
+      "price": 899.0,
+      "sales": 4200,
+      "shop": "索尼官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200067890123",
+      "image_url": "",
+      "url_hash": "957cf3e692e2"
+    },
+    {
+      "platform": "taobao",
+      "title": "Bose 蓝牙耳机 Plus 1T",
+      "price": 1299.0,
+      "sales": 3500,
+      "shop": "Bose官方店",
+      "shop_rating": 4.9,
+      "url": "https://item.taobao.com/item.htm?id=200034567890",
+      "image_url": "",
+      "url_hash": "1c349657736d"
+    },
+    {
+      "platform": "jd",
+      "title": "苹果 蓝牙耳机 Max 512G",
+      "price": 1599.0,
+      "sales": 6200,
+      "shop": "Apple官方旗舰店",
+      "shop_rating": 4.9,
+      "url": "https://item.m.jd.com/product/100045678901.html",
+      "image_url": "",
+      "url_hash": "37afc1ec2302"
+    }
+  ],
+  "cheapest": {
+    "platform": "pdd",
+    "title": "魅族 蓝牙耳机 T 定制版",
+    "price": 69.0,
+    "sales": 94500,
+    "shop": "魅族数码专营",
+    "shop_rating": 4.5,
+    "url": "https://mobile.yangkeduo.com/goods.html?goods_id=300056789012",
+    "image_url": "",
+    "sku_id": "300056789012",
+    "fetched_at": "2026-07-07T13:31:21"
+  },
+  "most_expensive": {
+    "platform": "jd",
+    "title": "苹果 蓝牙耳机 Max 512G",
+    "price": 1599.0,
+    "sales": 6200,
+    "shop": "Apple官方旗舰店",
+    "shop_rating": 4.9,
+    "url": "https://item.m.jd.com/product/100045678901.html",
+    "image_url": "",
+    "sku_id": "100045678901",
+    "fetched_at": "2026-07-07T13:31:21"
+  },
+  "price_gap": 1530.0,
+  "price_gap_ratio": 2217.39,
+  "total": 18
+}
