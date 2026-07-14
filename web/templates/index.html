@@ -290,12 +290,36 @@
     }
 
     // ============================================================
+    // ECharts 实例管理 (避免 resize 事件监听器累积导致内存泄漏)
+    // ============================================================
+    const _chartInstances = {};
+    const _resizeHandlers = {};
+
+    function _initChart(containerId) {
+        // 销毁旧实例，移除旧 resize 监听
+        if (_chartInstances[containerId]) {
+            _chartInstances[containerId].dispose();
+            _chartInstances[containerId] = null;
+        }
+        if (_resizeHandlers[containerId]) {
+            window.removeEventListener('resize', _resizeHandlers[containerId]);
+            _resizeHandlers[containerId] = null;
+        }
+        const el = document.getElementById(containerId);
+        const chart = echarts.init(el);
+        const handler = () => chart.resize();
+        window.addEventListener('resize', handler);
+        _chartInstances[containerId] = chart;
+        _resizeHandlers[containerId] = handler;
+        return chart;
+    }
+
+    // ============================================================
     // ECharts 图表
     // ============================================================
     function renderPlatformAvgChart(platforms) {
-        const el = document.getElementById('chartPlatformAvg');
         if (!platforms.length) return;
-        const chart = echarts.init(el);
+        const chart = _initChart('chartPlatformAvg');
         const names = platforms.map(s => PLATFORM_NAMES[s.platform] || s.platform);
         chart.setOption({
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
@@ -309,13 +333,11 @@
                 { name: '最高价', type: 'bar', data: platforms.map(s=>s.max_price), itemStyle: { color: '#FF6B6B' } },
             ]
         });
-        window.addEventListener('resize', () => chart.resize());
     }
 
     function renderDistributionChart(products) {
-        const el = document.getElementById('chartDistribution');
         if (!products.length) return;
-        const chart = echarts.init(el);
+        const chart = _initChart('chartDistribution');
         const prices = products.filter(p => p.price > 0).map(p => p.price);
         // 分桶
         const min = Math.min(...prices), max = Math.max(...prices);
@@ -325,11 +347,11 @@
         const labels = [];
         for (let i = 0; i < bins; i++) {
             labels.push(`¥${(min + i*step).toFixed(0)}`);
-            prices.forEach(p => {
-                const idx = Math.min(Math.floor((p - min) / step), bins - 1);
-                buckets[idx]++;
-            });
         }
+        prices.forEach(p => {
+            const idx = Math.min(Math.floor((p - min) / step), bins - 1);
+            buckets[idx]++;
+        });
         chart.setOption({
             tooltip: { trigger: 'axis' },
             grid: { left: 50, right: 20, top: 30, bottom: 60 },
@@ -345,13 +367,11 @@
                 }
             }]
         });
-        window.addEventListener('resize', () => chart.resize());
     }
 
     function renderBoxChart(products) {
-        const el = document.getElementById('chartBox');
         if (!products.length) return;
-        const chart = echarts.init(el);
+        const chart = _initChart('chartBox');
         const groups = {};
         products.forEach(p => {
             if (p.price > 0) {
@@ -371,13 +391,11 @@
             yAxis: { type: 'value', name: '元', axisLabel: { color: '#9ca3af' }, splitLine: { lineStyle: { color: '#2d3548' } } },
             series: [{ name: '价格', type: 'boxplot', data: series, itemStyle: { color: '#4ECDC4', borderColor: '#5dd9d0' } }]
         });
-        window.addEventListener('resize', () => chart.resize());
     }
 
     function renderRecommendChart(recs) {
-        const el = document.getElementById('chartRecommend');
         if (!recs.length) return;
-        const chart = echarts.init(el);
+        const chart = _initChart('chartRecommend');
         chart.setOption({
             tooltip: { trigger: 'item', formatter: '{b}<br/>得分: {c}' },
             grid: { left: 50, right: 20, top: 20, bottom: 60 },
@@ -399,12 +417,10 @@
                 label: { show: true, position: 'right', color: '#9ca3af', formatter: '{c}' }
             }]
         });
-        window.addEventListener('resize', () => chart.resize());
     }
 
     function renderTrendChart(points, title) {
-        const el = document.getElementById('chartTrend');
-        const chart = echarts.init(el);
+        const chart = _initChart('chartTrend');
         if (!points || points.length === 0) {
             chart.setOption({
                 title: { text: '暂无趋势数据 (需多次采集同关键词)', left: 'center', top: 'center', textStyle: { color: '#9ca3af', fontSize: 14 } }
@@ -434,7 +450,6 @@
                 }
             }]
         });
-        window.addEventListener('resize', () => chart.resize());
     }
 
     // ============================================================

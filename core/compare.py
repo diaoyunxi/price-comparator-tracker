@@ -67,6 +67,13 @@ def normalize(values: List[float], invert: bool = False) -> List[float]:
     return [(v - lo) / (hi - lo) for v in values]
 
 
+# 推荐理由判定阈值 (可配置)
+THRESHOLD_PRICE_LOW = 0.7      # 价格归一化 >= 此值视为 "价格处于低位"
+THRESHOLD_PRICE_MID = 0.4      # 价格归一化 >= 此值视为 "价格适中"
+THRESHOLD_SALES_HIGH = 0.6     # 销量归一化 >= 此值视为 "销量领先"
+THRESHOLD_RATING_HIGH = 0.7    # 评分归一化 >= 此值视为 "店铺评分高"
+
+
 def compute_recommendations(
     products: List[Product],
     top_n: int = 5,
@@ -139,13 +146,13 @@ def compute_recommendations(
         p = products[idx]
         # 生成推荐理由
         reasons = []
-        if ps >= 0.7:
+        if ps >= THRESHOLD_PRICE_LOW:
             reasons.append("价格处于低位")
-        elif ps >= 0.4:
+        elif ps >= THRESHOLD_PRICE_MID:
             reasons.append("价格适中")
-        if ss >= 0.6:
+        if ss >= THRESHOLD_SALES_HIGH:
             reasons.append("销量领先")
-        if rs >= 0.7:
+        if rs >= THRESHOLD_RATING_HIGH:
             reasons.append("店铺评分高")
         if not reasons:
             reasons.append("综合表现均衡")

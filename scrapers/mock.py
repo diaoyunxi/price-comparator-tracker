@@ -186,15 +186,69 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
     Returns:
         90 条示例商品 (3 平台各 30 条)
     """
-    rng_state = random.getstate()
-    random.seed(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8][:8])
-    try:
-        result: List[Product] = []
-        for platform in ("jd", "taobao", "pdd"):
-            result.extend(generate_mock_for_platform(keyword, platform, 30))
-    finally:
-        random.setstate(rng_state)
+    # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
+    local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])
+    result: List[Product] = []
+    for platform in ("jd", "taobao", "pdd"):
+        result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
     return result
+
+
+def _generate_mock_for_platform_with_rng(keyword: str, platform: str, limit: int, rng: random.Random) -> List[Product]:
+    """使用指定 Random 实例为平台生成 Mock 商品 (供 generate_sample_dataset 内部使用)"""
+    base = _base_price_for_keyword(keyword)
+    url_tpl = URL_TEMPLATES.get(platform, "https://example.com/{sku}")
+    products: List[Product] = []
+    for i in range(limit):
+        title = _gen_title_with_rng(keyword, rng)
+        sku = _hash_sku(keyword, i, platform)
+        products.append(Product(
+            platform=platform,
+            title=title,
+            price=_gen_price_with_rng(base, rng),
+            sales=_gen_sales_with_rng(rng),
+            shop=_gen_shop_with_rng(rng),
+            shop_rating=_gen_rating_with_rng(rng),
+            url=url_tpl.format(sku=sku),
+            image_url="",
+            sku_id=sku,
+        ))
+    return products
+
+
+def _gen_title_with_rng(keyword: str, rng: random.Random) -> str:
+    brand = rng.choice(BRANDS)
+    spec = rng.choice(SPECS)
+    suffix = rng.choice(SUFFIXES)
+    return f"{brand} {keyword} {spec} {suffix}"
+
+
+def _gen_price_with_rng(base: float, rng: random.Random) -> float:
+    factor = rng.uniform(0.5, 2.0)
+    noise = rng.uniform(-5, 5)
+    price = base * factor + noise
+    return round(max(price, 9.9), 2)
+
+
+def _gen_sales_with_rng(rng: random.Random) -> int:
+    r = rng.random()
+    if r < 0.05:
+        return rng.randint(10_000, 50_000)
+    elif r < 0.35:
+        return rng.randint(1_000, 10_000)
+    else:
+        return rng.randint(10, 1_000)
+
+
+def _gen_shop_with_rng(rng: random.Random) -> str:
+    brand = rng.choice(BRANDS)
+    shop_type = rng.choice(SHOP_PREFIXES)
+    return f"{brand}{shop_type}"
+
+
+def _gen_rating_with_rng(rng: random.Random) -> float:
+    r = rng.gauss(4.7, 0.18)
+    return round(max(4.0, min(r, 5.0)), 2)
 
 
 __all__ = [

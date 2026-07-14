@@ -21,6 +21,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 import sys
 import time
 import uuid
@@ -77,6 +78,8 @@ class TaskStore:
     def __init__(self) -> None:
         self.tasks: Dict[str, dict] = {}
         self._lock = asyncio.Lock()
+        # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
+        self._bg_tasks: Dict[str, asyncio.Task] = {}
 
     async def create(self, keyword: str, platforms: list, limit: int,
                      use_mock: bool) -> str:
@@ -238,6 +241,13 @@ async def api_crawl(req: CrawlRequest):
     """启动采集任务, 返回 task_id"""
     if not req.keyword or not req.keyword.strip():
         raise HTTPException(400, "关键词不能为空")
+    keyword = req.keyword.strip()
+    # 校验关键词长度 (1-100 字符)
+    if len(keyword) < 1 or len(keyword) > 100:
+        raise HTTPException(400, "关键词长度必须在 1-100 个字符之间")
+    # 校验关键词内容 (仅允许中文、英文、数字、空格及常见标点)
+    if not re.match(r'^[\w\s\u4e00-\u9fff\-_.+/]+$', keyword):
+        raise HTTPException(400, "关键词包含非法字符，仅允许中文、英文、数字及常见符号")
     cfg = get_config()
     # 验证平台
     valid_platforms = set(cfg.platforms.keys())
@@ -245,7 +255,7 @@ async def api_crawl(req: CrawlRequest):
     if not req.platforms:
         req.platforms = list(valid_platforms)
     if req.limit < 1 or req.limit > 100:
-        req.limit = cfg.crawl.limit_per_platform
+        raise HTTPException(400, "limit 必须在 1-100 之间")
 
     # 任务并发限制
     running = sum(1 for t in tasks_store.tasks.values() if t["status"] == "running")
@@ -253,12 +263,14 @@ async def api_crawl(req: CrawlRequest):
         raise HTTPException(429, f"已有 {running} 个任务在跑, 稍后再试")
 
     task_id = await tasks_store.create(
-        keyword=req.keyword.strip(),
+        keyword=keyword,
         platforms=req.platforms,
         limit=req.limit,
         use_mock=req.use_mock,
     )
-    asyncio.create_task(_run_crawl_task(task_id, req))
+    task = asyncio.create_task(_run_crawl_task(task_id, req))
+    tasks_store._bg_tasks[task_id] = task
+    task.add_done_callback(lambda t, tid=task_id: tasks_store._bg_tasks.pop(tid, None))
     return {"task_id": task_id, "status": "pending"}
 
 

@@ -50,13 +50,13 @@ class TaobaoScraper(BaseScraper):
                                  referer="https://s.m.taobao.com/")
         self._sleep()
         if result.success:
-            products = self._parse_mobile_h5(result.text, keyword)
+            products = self._parse_mobile_h5(result.text, keyword, limit)
             if products:
                 return products
 
         # 2. 尝试从 HTML 中提取嵌入的 JSON 数据 (常见 mtop 响应)
         if result.success:
-            products = self._extract_embedded_json(result.text, keyword)
+            products = self._extract_embedded_json(result.text, keyword, limit)
             if products:
                 return products
 
@@ -67,7 +67,7 @@ class TaobaoScraper(BaseScraper):
                                   referer="https://www.taobao.com/")
         self._sleep()
         if result2.success:
-            products = self._extract_embedded_json(result2.text, keyword)
+            products = self._extract_embedded_json(result2.text, keyword, limit)
             if products:
                 return products
 
@@ -76,7 +76,7 @@ class TaobaoScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """解析移动端 H5 搜索结果"""
         products: List[Product] = []
         try:
@@ -134,14 +134,14 @@ class TaobaoScraper(BaseScraper):
                     shop=shop, shop_rating=-1.0,
                     url=url, sku_id=sku_id,
                 ))
-                if len(products) >= self.cfg.limit_per_platform:
+                if len(products) >= limit:
                     break
             except Exception as e:
                 logger.debug("[%s] 解析单条商品失败: %s", self.platform, e)
                 continue
         return products
 
-    def _extract_embedded_json(self, html: str, keyword: str) -> List[Product]:
+    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """
         从 HTML 中提取嵌入的 JSON 数据
 
@@ -165,14 +165,14 @@ class TaobaoScraper(BaseScraper):
                         platform=self.platform,
                         title=it.get("raw_title", ""),
                         price=float(it.get("view_price", -1) or -1),
-                        sales=it.get("view_sales_num", -1) or _parse_sales_str(it.get("view_fee", "")),
+                        sales=_parse_sales_str(it.get("view_sales", it.get("view_sales_num", ""))),
                         shop=it.get("nick", "淘宝"),
                         shop_rating=float(it.get("shopcard", {}).get("slevel", -1) or -1),
                         url=f"https://item.taobao.com/item.htm?id={it.get('nid','')}",
                         sku_id=str(it.get("nid", "")),
                     ))
                 if products:
-                    return products[:self.cfg.limit_per_platform]
+                    return products[:limit]
             except Exception as e:
                 logger.debug("[%s] g_page_config 解析失败: %s", self.platform, e)
 
@@ -201,7 +201,7 @@ class TaobaoScraper(BaseScraper):
                         sku_id=str(it.get("nid") or it.get("itemId") or ""),
                     ))
                 if products:
-                    return products[:self.cfg.limit_per_platform]
+                    return products[:limit]
             except Exception as e:
                 logger.debug("[%s] __INITIAL_STATE__ 解析失败: %s", self.platform, e)
         return products

@@ -311,7 +311,7 @@ class AntiCrawlSession:
                         last_error = "captcha_triggered"
                         self._backoff(attempt)
                         continue
-                if resp.status_code == 200:
+                if resp.status_code < 400:
                     result.success = True
                     return result
                 if resp.status_code in (403, 412):
@@ -413,8 +413,9 @@ class AntiCrawlSession:
                 if method == "GET":
                     resp = page.goto(url, wait_until="networkidle", timeout=timeout * 1000)
                 else:
-                    page.goto(url.split("?")[0], wait_until="domcontentloaded", timeout=timeout * 1000)
-                    resp = page.request.post(url, headers=headers,
+                    # POST 降级: 保留完整 URL (含查询参数), 直接使用 API 请求
+                    full_url = url  # 保留完整 URL 不截断查询参数
+                    resp = page.request.post(full_url, headers=headers,
                                              data=json_body or data or {})
                 if resp is None:
                     result.error = "playwright_no_response"

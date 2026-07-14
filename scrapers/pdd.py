@@ -50,11 +50,11 @@ class PddScraper(BaseScraper):
                                  referer="https://mobile.yangkeduo.com/")
         self._sleep()
         if result.success:
-            products = self._parse_mobile_h5(result.text, keyword)
+            products = self._parse_mobile_h5(result.text, keyword, limit)
             if products:
                 return products
             # 尝试从嵌入 JSON 提取
-            products = self._extract_embedded_json(result.text, keyword)
+            products = self._extract_embedded_json(result.text, keyword, limit)
             if products:
                 return products
 
@@ -71,7 +71,7 @@ class PddScraper(BaseScraper):
                                    params=params)
         self._sleep()
         if result2.success:
-            products = self._parse_api_json(result2.text, keyword)
+            products = self._parse_api_json(result2.text, keyword, limit)
             if products:
                 return products
 
@@ -80,7 +80,7 @@ class PddScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """解析移动端 H5 搜索结果"""
         products: List[Product] = []
         try:
@@ -134,14 +134,14 @@ class PddScraper(BaseScraper):
                     shop=shop, shop_rating=-1.0,
                     url=url, sku_id=str(goods_id),
                 ))
-                if len(products) >= self.cfg.limit_per_platform:
+                if len(products) >= limit:
                     break
             except Exception as e:
                 logger.debug("[%s] 解析单条商品失败: %s", self.platform, e)
                 continue
         return products
 
-    def _extract_embedded_json(self, html: str, keyword: str) -> List[Product]:
+    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """从 HTML 中提取嵌入的 JSON 数据"""
         products: List[Product] = []
         # 拼多多常把数据放在 window.__INITIAL_STATE__ 中
@@ -172,12 +172,12 @@ class PddScraper(BaseScraper):
                         sku_id=goods_id,
                     ))
                 if products:
-                    return products[:self.cfg.limit_per_platform]
+                    return products[:limit]
             except Exception as e:
                 logger.debug("[%s] __INITIAL_STATE__ 解析失败: %s", self.platform, e)
         return products
 
-    def _parse_api_json(self, text: str, keyword: str) -> List[Product]:
+    def _parse_api_json(self, text: str, keyword: str, limit: int = 30) -> List[Product]:
         """解析 API JSON 响应"""
         products: List[Product] = []
         try:
@@ -207,9 +207,11 @@ class PddScraper(BaseScraper):
                 if not title:
                     continue
                 price = it.get("price") or it.get("min_normal_price") or -1
-                # 拼多多价格单位为分, 转元
-                if isinstance(price, (int, float)) and price > 1000:
-                    price = price / 100
+                # 拼多多 API 价格可能以分为单位 (整数且无小数点时大概率是分)
+                if isinstance(price, (int, float)) and price > 0:
+                    # 价格 > 10000 分 (即 100 元以上) 且为整数时视为分单位
+                    if price >= 10000 and price == int(price):
+                        price = price / 100
                 goods_id = str(it.get("goodsId") or it.get("goods_id") or "")
                 products.append(Product(
                     platform=self.platform,
@@ -221,7 +223,7 @@ class PddScraper(BaseScraper):
                     url=f"https://mobile.yangkeduo.com/goods.html?goods_id={goods_id}" if goods_id else "",
                     sku_id=goods_id,
                 ))
-                if len(products) >= self.cfg.limit_per_platform:
+                if len(products) >= limit:
                     break
             except Exception as e:
                 logger.debug("[%s] 单条商品解析失败: %s", self.platform, e)

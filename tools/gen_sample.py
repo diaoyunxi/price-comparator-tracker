@@ -31,6 +31,9 @@ def generate() -> dict:
     cleaned, stats = clean_products(products)
     cfg = get_config()
 
+    # 预计算价差信息，避免重复调用
+    gap_info = cheapest_vs_most_expensive(cleaned)
+
     return {
         "keyword": keyword,
         "platforms": raw["platforms"],
@@ -53,14 +56,10 @@ def generate() -> dict:
             } for r in compute_recommendations(cleaned, cfg.recommend_top_n)
         ],
         "compare_table": build_compare_table(cleaned),
-        "cheapest": (lambda g: g["cheapest"].to_dict() if g["cheapest"] else None)(
-            cheapest_vs_most_expensive(cleaned)
-        ),
-        "most_expensive": (lambda g: g["most_expensive"].to_dict() if g["most_expensive"] else None)(
-            cheapest_vs_most_expensive(cleaned)
-        ),
-        "price_gap": cheapest_vs_most_expensive(cleaned)["price_gap"],
-        "price_gap_ratio": cheapest_vs_most_expensive(cleaned)["price_gap_ratio"],
+        "cheapest": gap_info["cheapest"].to_dict() if gap_info["cheapest"] else None,
+        "most_expensive": gap_info["most_expensive"].to_dict() if gap_info["most_expensive"] else None,
+        "price_gap": gap_info["price_gap"],
+        "price_gap_ratio": gap_info["price_gap_ratio"],
         "total": len(cleaned),
     }
 

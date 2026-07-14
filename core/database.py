@@ -49,6 +49,7 @@ class Database:
     CREATE INDEX IF NOT EXISTS idx_url_hash ON products(url_hash);
     CREATE INDEX IF NOT EXISTS idx_keyword  ON products(keyword);
     CREATE INDEX IF NOT EXISTS idx_date     ON products(fetched_date);
+    CREATE INDEX IF NOT EXISTS idx_keyword_date ON products(keyword, fetched_date DESC, fetched_at DESC);
 
     CREATE TABLE IF NOT EXISTS crawl_meta (
         id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,24 +65,33 @@ class Database:
     def __init__(self, cfg: Optional[DBConfig] = None) -> None:
         self.cfg = cfg or get_config().db
         Path(self.cfg.path).parent.mkdir(parents=True, exist_ok=True)
+        # 使用长连接复用，避免每次操作都创建/关闭连接
+        self._db_conn: Optional[sqlite3.Connection] = None
         self._init_schema()
 
     # ------------------------------------------------------------------
     # 连接管理
     # ------------------------------------------------------------------
+    @property
+    def _connection(self) -> sqlite3.Connection:
+        """获取复用的数据库连接 (懒初始化, 线程安全通过 _lock 保护写入)"""
+        if self._db_conn is None:
+            self._db_conn = sqlite3.connect(
+                self.cfg.path, timeout=30, check_same_thread=False
+            )
+            self._db_conn.row_factory = sqlite3.Row
+        return self._db_conn
+
     @contextmanager
     def _conn(self):
         """获取数据库连接 (上下文管理, 自动提交/回滚)"""
-        conn = sqlite3.connect(self.cfg.path, timeout=30, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
+        conn = self._connection
         try:
             yield conn
             conn.commit()
         except Exception:
             conn.rollback()
             raise
-        finally:
-            conn.close()
 
     def _init_schema(self) -> None:
         """初始化数据库 schema"""
@@ -165,13 +175,15 @@ class Database:
             rows = conn.execute(
                 """SELECT * FROM products
                    WHERE keyword = ?
-                     AND fetched_at = (
-                       SELECT MAX(fetched_at) FROM products WHERE keyword = ?
-                     )
-                   ORDER BY price ASC""",
-                (keyword, keyword),
+                   ORDER BY fetched_date DESC, fetched_at DESC
+                   LIMIT 1000""",
+                (keyword,),
             ).fetchall()
-        return [self._row_to_product(r) for r in rows]
+        if not rows:
+            return []
+        # 取最新 fetched_at 对应的记录
+        latest_at = rows[0]["fetched_at"]
+        return [self._row_to_product(r) for r in rows if r["fetched_at"] == latest_at]
 
     def get_price_trend(self, url_hash: str, days: int = 30) -> List[Tuple[str, float]]:
         """

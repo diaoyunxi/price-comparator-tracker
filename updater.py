@@ -72,8 +72,12 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
     })
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+            raw_text = resp.read().decode("utf-8")
+            data = json.loads(raw_text)
         return data
+    except json.JSONDecodeError as e:
+        logger.debug("GitHub release 响应非 JSON 格式: %s, 响应前200字符: %s", e, raw_text[:200])
+        return None
     except Exception as e:
         logger.debug("拉取 release 失败: %s", e)
         return None

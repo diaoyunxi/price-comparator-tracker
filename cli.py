@@ -36,6 +36,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 from pathlib import Path
 from typing import List, Optional
 
@@ -211,7 +212,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     if args.chart:
         _generate_charts(result, db, args.trend_days)
     if args.save_json:
-        out = EXPORT_DIR / f"result_{args.keyword}_{int(__import__('time').time())}.json"
+        out = EXPORT_DIR / f"result_{args.keyword}_{int(time.time())}.json"
         out.write_text(json.dumps(result.to_dict(), ensure_ascii=False, indent=2),
                       encoding="utf-8")
         print(f"\n结果 JSON 已保存: {out}")
@@ -225,7 +226,7 @@ def _export(result, fmt: str) -> None:
     from core.compare import build_compare_table
     if fmt == "csv":
         import csv
-        out = EXPORT_DIR / f"products_{result.keyword}_{int(__import__('time').time())}.csv"
+        out = EXPORT_DIR / f"products_{result.keyword}_{int(time.time())}.csv"
         rows = build_compare_table(result.products)
         if not rows:
             print("无数据可导出")
@@ -237,7 +238,7 @@ def _export(result, fmt: str) -> None:
                 writer.writerow(r)
         print(f"CSV 已导出: {out}")
     elif fmt == "json":
-        out = EXPORT_DIR / f"products_{result.keyword}_{int(__import__('time').time())}.json"
+        out = EXPORT_DIR / f"products_{result.keyword}_{int(time.time())}.json"
         out.write_text(json.dumps(result.to_dict(), ensure_ascii=False, indent=2),
                       encoding="utf-8")
         print(f"JSON 已导出: {out}")
@@ -300,8 +301,10 @@ def cmd_trend(args: argparse.Namespace) -> int:
         print("无趋势数据")
         return 0
     print(f"\n价格趋势 (近 {args.days} 天):")
+    # 过滤有效价格，避免除零崩溃
+    prices = [p for _, p in trend if p > 0]
     for date, price in trend:
-        bar = "█" * int(price / max(p for _, p in trend) * 30) if price > 0 else ""
+        bar = "█" * int(price / max(prices) * 30) if price > 0 and prices else ""
         print(f"  {date}  ¥{price:>10.2f}  {bar}")
     return 0
 

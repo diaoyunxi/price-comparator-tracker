@@ -51,7 +51,7 @@ class JDScraper(BaseScraper):
                                  referer="https://so.m.jd.com/")
         self._sleep()
         if result.success:
-            products = self._parse_mobile_h5(result.text, keyword)
+            products = self._parse_mobile_h5(result.text, keyword, limit)
             if products:
                 return products
 
@@ -62,7 +62,7 @@ class JDScraper(BaseScraper):
                                   referer="https://www.jd.com/")
         self._sleep()
         if result2.success:
-            products = self._parse_pc(result2.text, keyword)
+            products = self._parse_pc(result2.text, keyword, limit)
             if products:
                 return products
 
@@ -71,7 +71,7 @@ class JDScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """
         解析移动端 H5 搜索结果
 
@@ -137,14 +137,14 @@ class JDScraper(BaseScraper):
                     url=url,
                     sku_id=sku_id,
                 ))
-                if len(products) >= self.cfg.limit_per_platform:
+                if len(products) >= limit:
                     break
             except Exception as e:
                 logger.debug("[%s] 解析单条商品失败: %s", self.platform, e)
                 continue
         return products
 
-    def _parse_pc(self, html: str, keyword: str) -> List[Product]:
+    def _parse_pc(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
         """
         解析 PC 端搜索结果页 (备用)
 
@@ -169,7 +169,7 @@ class JDScraper(BaseScraper):
                 except Exception:
                     pass
                 if products:
-                    return products[:self.cfg.limit_per_platform]
+                    return products[:limit]
 
         # 退化: 通用选择器
         for el in soup.select("li.gl-item, div.gl-item"):
@@ -189,7 +189,12 @@ class JDScraper(BaseScraper):
                 if link_el:
                     href = link_el.get("href", "")
                     if href:
-                        url = href if href.startswith("http") else f"https:{href}" if href.startswith("//") else f"https:{href}"
+                        if href.startswith("http"):
+                            url = href
+                        elif href.startswith("//"):
+                            url = f"https:{href}"
+                        else:
+                            url = f"https://so.m.jd.com{href if href.startswith('/') else '/' + href}"
                     m = re.search(r"product/(\d+)", url)
                     if m:
                         sku_id = m.group(1)
@@ -201,7 +206,7 @@ class JDScraper(BaseScraper):
                     shop=shop, shop_rating=-1.0,
                     url=url, sku_id=sku_id,
                 ))
-                if len(products) >= self.cfg.limit_per_platform:
+                if len(products) >= limit:
                     break
             except Exception:
                 continue

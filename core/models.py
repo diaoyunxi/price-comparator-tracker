@@ -62,8 +62,8 @@ class Product:
 
     @property
     def url_hash(self) -> str:
-        """URL md5 短哈希, 用于趋势聚合稳定 ID"""
-        return hashlib.md5(self.url.encode("utf-8")).hexdigest()[:12]
+        """URL SHA256 短哈希 (前16位), 用于趋势聚合稳定 ID, 碰撞概率极低"""
+        return hashlib.sha256(self.url.encode("utf-8")).hexdigest()[:16]
 
     def to_dict(self) -> dict:
         return asdict(self)
