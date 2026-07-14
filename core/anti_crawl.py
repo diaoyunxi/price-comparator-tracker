@@ -322,6 +322,15 @@ class AntiCrawlSession:
                                   resp.status_code, url)
                     self._backoff(attempt)
                     continue
+                # 5xx 服务端错误, 纳入重试逻辑 (退避后重试)
+                if 500 <= resp.status_code < 600:
+                    last_error = f"http_{resp.status_code}"
+                    logger.warning("[%s] 第 %d 次请求服务端错误 (%d): %s",
+                                   platform, attempt, resp.status_code, url)
+                    if attempt < self.cfg.max_retries:
+                        self._backoff(attempt)
+                        continue
+                    break
                 # 其他状态码视为失败
                 last_error = f"http_{resp.status_code}"
                 break

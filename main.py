@@ -128,9 +128,12 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
     await tasks_store.update(task_id, status="running", progress=10)
     try:
         # 在线程池中执行 (避免阻塞事件循环)
-        loop = asyncio.get_event_loop()
+        # 使用 get_running_loop 获取当前运行的事件循环 (get_event_loop 在 3.10+ 已弃用)
+        loop = asyncio.get_running_loop()
         # 分阶段更新进度
         await tasks_store.update(task_id, progress=30)
+        # 为每个任务创建独立的 Database 实例, 避免多线程共享连接导致锁冲突
+        task_db = Database()
         result = await loop.run_in_executor(
             None,
             lambda: run_crawl(
@@ -138,7 +141,7 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
                 platforms=req.platforms,
                 limit_per_platform=req.limit,
                 use_mock=req.use_mock,
-                db=db,
+                db=task_db,
                 parallel=True,
             ),
         )
@@ -296,6 +299,11 @@ async def api_history(limit: int = 20):
 @app.get("/api/trend")
 async def api_trend(url_hash: str, days: int = 30):
     """某商品价格趋势"""
+    # 参数长度校验, 防止超长输入造成异常
+    if not url_hash or len(url_hash) > 128:
+        raise HTTPException(400, "url_hash 长度必须在 1-128 个字符之间")
+    if days < 1 or days > 365:
+        raise HTTPException(400, "days 必须在 1-365 之间")
     trend = db.get_price_trend(url_hash, days)
     return {
         "url_hash": url_hash,
@@ -307,6 +315,11 @@ async def api_trend(url_hash: str, days: int = 30):
 @app.get("/api/trend/keyword")
 async def api_trend_keyword(keyword: str, days: int = 30):
     """关键词下所有商品价格趋势"""
+    # 参数长度校验, 防止超长输入造成异常
+    if not keyword or not keyword.strip() or len(keyword) > 100:
+        raise HTTPException(400, "keyword 长度必须在 1-100 个字符之间")
+    if days < 1 or days > 365:
+        raise HTTPException(400, "days 必须在 1-365 之间")
     trends = db.get_trend_for_keyword(keyword, days)
     return {
         "keyword": keyword,

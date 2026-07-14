@@ -70,6 +70,8 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
         "Accept": "application/vnd.github+json",
         "User-Agent": f"{repo}-updater/{read_version()}",
     })
+    # 在 try 之前初始化 raw_text, 避免异常处理中引用未定义变量
+    raw_text = ""
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             raw_text = resp.read().decode("utf-8")

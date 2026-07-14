@@ -83,12 +83,15 @@ class DBConfig:
     path: str = str(DB_PATH)
     # 历史保留天数, 0 表示永久保留
     retention_days: int = 0
+    # 是否启用 WAL 模式 (Write-Ahead Logging), 提升并发读写性能
+    enable_wal: bool = True
 
 
 @dataclass
 class WebConfig:
     """Web 服务配置"""
-    host: str = "0.0.0.0"
+    # 默认绑定 127.0.0.1, 避免暴露到公网 (安全风险)
+    host: str = "127.0.0.1"
     port: int = 8765
     # 后台采集任务最大并发数
     max_concurrent_tasks: int = 3

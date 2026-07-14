@@ -11,6 +11,7 @@ SQLite 历史数据存储
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 import threading
 from contextlib import contextmanager
@@ -21,6 +22,8 @@ from typing import Dict, List, Optional, Tuple
 from config import DBConfig, get_config
 from core.models import Product
 
+
+logger = logging.getLogger("database")
 
 # 模块级线程锁 (SQLite 默认连接非线程安全)
 _lock = threading.Lock()
@@ -80,6 +83,12 @@ class Database:
                 self.cfg.path, timeout=30, check_same_thread=False
             )
             self._db_conn.row_factory = sqlite3.Row
+            # 启用 WAL 模式, 提升并发读写性能并减少锁冲突
+            if getattr(self.cfg, "enable_wal", True):
+                try:
+                    self._db_conn.execute("PRAGMA journal_mode=WAL")
+                except sqlite3.DatabaseError as e:
+                    logger.warning("启用 WAL 模式失败: %s", e)
         return self._db_conn
 
     @contextmanager
@@ -165,6 +174,8 @@ class Database:
         """
         获取某关键词最近一次采集的所有商品 (按 url_hash + 最新 fetched_at)
 
+        使用 SQL 子查询直接定位最新一批记录, 避免 Python 端二次过滤。
+
         Args:
             keyword: 搜索关键词
 
@@ -175,15 +186,14 @@ class Database:
             rows = conn.execute(
                 """SELECT * FROM products
                    WHERE keyword = ?
+                     AND fetched_at = (
+                       SELECT MAX(fetched_at) FROM products WHERE keyword = ?
+                     )
                    ORDER BY fetched_date DESC, fetched_at DESC
                    LIMIT 1000""",
-                (keyword,),
+                (keyword, keyword),
             ).fetchall()
-        if not rows:
-            return []
-        # 取最新 fetched_at 对应的记录
-        latest_at = rows[0]["fetched_at"]
-        return [self._row_to_product(r) for r in rows if r["fetched_at"] == latest_at]
+        return [self._row_to_product(r) for r in rows]
 
     def get_price_trend(self, url_hash: str, days: int = 30) -> List[Tuple[str, float]]:
         """

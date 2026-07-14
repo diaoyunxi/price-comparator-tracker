@@ -9,6 +9,10 @@
 
 中文字体自动检测: 优先 Microsoft YaHei / PingFang SC / Noto Sans CJK / SimHei,
 全部缺失时退化英文标签, 不阻塞绘图。
+
+注意: 当前所有图表生成函数均为同步阻塞调用 (matplotlib 使用 Agg 后端)。
+在 Web 异步场景下, 建议通过 loop.run_in_executor 将这些函数放入线程池执行,
+避免阻塞事件循环。后续可考虑提供 async 异步生成图表的封装版本。
 """
 
 from __future__ import annotations

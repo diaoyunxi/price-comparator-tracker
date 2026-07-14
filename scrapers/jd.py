@@ -21,6 +21,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup
 
 from config import get_config
+from core.dedup import parse_price, parse_sales
 from core.models import Product
 from scrapers.base import BaseScraper
 
@@ -104,7 +105,6 @@ class JDScraper(BaseScraper):
                 price = -1.0
                 price_el = el.select_one(".search_price, .p-price, .price, .goods_price")
                 if price_el:
-                    from core.dedup import parse_price
                     price = parse_price(price_el.get_text(strip=True))
                 # 链接
                 url = ""
@@ -122,7 +122,6 @@ class JDScraper(BaseScraper):
                 sales_text = el.select_one(".search_comment, .comment, .sales")
                 sales = -1
                 if sales_text:
-                    from core.dedup import parse_sales
                     sales = parse_sales(sales_text.get_text(strip=True))
                 shop_el = el.select_one(".search_shop, .shop, .store")
                 shop = shop_el.get_text(strip=True) if shop_el else "京东自营"
@@ -181,7 +180,6 @@ class JDScraper(BaseScraper):
                 price_el = el.select_one(".p-price i, .p-price strong")
                 price = -1.0
                 if price_el:
-                    from core.dedup import parse_price
                     price = parse_price(price_el.get_text(strip=True))
                 link_el = el.select_one(".p-name a")
                 url = ""
@@ -214,10 +212,15 @@ class JDScraper(BaseScraper):
 
     def _item_from_pc_json(self, it: dict) -> Product:
         """从 PC 端 JSON 数据项构造 Product"""
+        # 显式判空: 避免价格为 0 时被 or 表达式误判为 falsy 而取 -1
+        raw = it.get("jd_price")
+        if raw is None:
+            raw = it.get("price", -1)
+        price = float(raw) if raw is not None else -1.0
         return Product(
             platform=self.platform,
             title=it.get("wname", it.get("title", "")),
-            price=float(it.get("jd_price", it.get("price", -1)) or -1),
+            price=price,
             sales=int(it.get("commentcount", -1) or -1),
             shop=it.get("shop_name", "京东"),
             shop_rating=-1.0,

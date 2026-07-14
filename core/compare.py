@@ -105,32 +105,31 @@ def compute_recommendations(
     sales = [p.sales for p in products if p.sales >= 0]
     ratings = [p.shop_rating for p in products if p.shop_rating >= 0]
 
-    price_norm = normalize(prices, invert=True) if prices else []
-    sales_norm = normalize(sales, invert=False) if sales else []
-    rating_norm = normalize(ratings, invert=False) if ratings else []
+    # 建立产品对象(id) -> 归一化值 的字典映射, 避免过滤后列表索引与原 products 不对应
+    price_map: Dict[int, float] = {}
+    if prices:
+        for p, nv in zip((p for p in products if p.price > 0),
+                         normalize(prices, invert=True)):
+            price_map[id(p)] = nv
 
-    # 建立原始索引 -> 归一化值的映射
+    sales_map: Dict[int, float] = {}
+    if sales:
+        for p, nv in zip((p for p in products if p.sales >= 0),
+                         normalize(sales, invert=False)):
+            sales_map[id(p)] = nv
+
+    rating_map: Dict[int, float] = {}
+    if ratings:
+        for p, nv in zip((p for p in products if p.shop_rating >= 0),
+                         normalize(ratings, invert=False)):
+            rating_map[id(p)] = nv
+
     score_list: List[tuple] = []
-    pi = si = ri = 0
     for idx, p in enumerate(products):
-        # 价格
-        if p.price > 0 and pi < len(price_norm):
-            p_score = price_norm[pi]
-            pi += 1
-        else:
-            p_score = 0.0
-        # 销量
-        if p.sales >= 0 and si < len(sales_norm):
-            s_score = sales_norm[si]
-            si += 1
-        else:
-            s_score = 0.0
-        # 评分
-        if p.shop_rating >= 0 and ri < len(rating_norm):
-            r_score = rating_norm[ri]
-            ri += 1
-        else:
-            r_score = 0.0
+        # 通过字典映射获取各维度归一化值, 缺失时默认 0.0
+        p_score = price_map.get(id(p), 0.0)
+        s_score = sales_map.get(id(p), 0.0)
+        r_score = rating_map.get(id(p), 0.0)
 
         total = (
             p_score * w["price"]
@@ -191,7 +190,7 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
         median = sorted_p[n // 2] if n % 2 == 1 else (sorted_p[n // 2 - 1] + sorted_p[n // 2]) / 2
         result.append(PlatformStats(
             platform=platform_names.get(plat, plat),
-            count=len(items),
+            count=len(prices),  # 只统计有效价格商品数量
             avg_price=round(sum(prices) / len(prices), 2),
             min_price=min(prices),
             max_price=max(prices),

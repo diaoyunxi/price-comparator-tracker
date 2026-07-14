@@ -117,9 +117,10 @@ def run_crawl(keyword: str,
                     raw_results.append(fut.result())
                 except Exception as e:
                     logger.error("[%s] 采集失败: %s", plat, e)
+                    # 采集异常时并未真正使用 Mock 数据, used_mock 置为 False
                     raw_results.append(CrawlResult(
                         keyword=keyword, platform=plat, error=str(e),
-                        used_mock=True,
+                        used_mock=False,
                     ))
     else:
         # 串行
@@ -181,7 +182,8 @@ def _crawl_one(kw: str, plat: str, limit: int) -> CrawlResult:
         return scraper.search(kw, limit)
     except Exception as e:
         logger.error("[%s] 爬虫实例化失败: %s", plat, e)
-        return CrawlResult(keyword=kw, platform=plat, error=str(e), used_mock=True)
+        # 异常时未使用 Mock 数据, used_mock 置为 False
+        return CrawlResult(keyword=kw, platform=plat, error=str(e), used_mock=False)
 
 
 __all__ = ["AggregatedResult", "run_crawl"]
