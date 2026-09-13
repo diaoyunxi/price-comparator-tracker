@@ -19,11 +19,11 @@
 
 from __future__ import annotations
 
+import logging
 import random
 import time
-import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -37,7 +37,7 @@ logger = logging.getLogger("anti_crawl")
 # ---------------------------------------------------------------------------
 # User-Agent 池
 # ---------------------------------------------------------------------------
-USER_AGENTS: List[str] = [
+USER_AGENTS: list[str] = [
     # 桌面 Chrome
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -74,7 +74,7 @@ def random_ua() -> str:
 # ---------------------------------------------------------------------------
 # 平台对应的默认请求头
 # ---------------------------------------------------------------------------
-def default_headers(platform: str, referer: Optional[str] = None) -> Dict[str, str]:
+def default_headers(platform: str, referer: str | None = None) -> dict[str, str]:
     """
     根据平台生成默认请求头
 
@@ -121,8 +121,8 @@ class ProxyPool:
     文件格式: 每行一个代理, 如 http://1.2.3.4:8080
     """
 
-    def __init__(self, file_path: Optional[str] = None) -> None:
-        self.proxies: List[str] = []
+    def __init__(self, file_path: str | None = None) -> None:
+        self.proxies: list[str] = []
         self._idx = 0
         if file_path:
             self.load(file_path)
@@ -140,7 +140,7 @@ class ProxyPool:
             logger.warning("代理池文件不存在: %s", file_path)
         return len(self.proxies)
 
-    def get(self) -> Optional[str]:
+    def get(self) -> str | None:
         """获取下一个代理 (轮询)"""
         if not self.proxies:
             return None
@@ -168,7 +168,7 @@ class CookiePool:
         from pathlib import Path
         self.dir = Path(dir_path)
         self.dir.mkdir(parents=True, exist_ok=True)
-        self._cache: Dict[str, str] = {}
+        self._cache: dict[str, str] = {}
 
     def get(self, platform: str) -> str:
         """获取平台 Cookie"""
@@ -196,7 +196,7 @@ class RequestResult:
     elapsed: float = 0.0
     retries: int = 0
     error: str = ""
-    used_proxy: Optional[str] = None
+    used_proxy: str | None = None
     used_playwright: bool = False
 
 
@@ -205,7 +205,7 @@ class AntiCrawlSession:
     反爬会话: 封装 requests.Session + 重试 + 代理 + 退避 + playwright 降级
     """
 
-    def __init__(self, cfg: Optional[CrawlConfig] = None) -> None:
+    def __init__(self, cfg: CrawlConfig | None = None) -> None:
         self.cfg = cfg or get_config().crawl
         self.session = requests.Session()
         # urllib3 级别重试 (连接错误时)
@@ -223,14 +223,14 @@ class AntiCrawlSession:
         self.cookie_pool = CookiePool(self.cfg.cookie_dir) if self.cfg.enable_cookie_pool else None
 
         # 验证码识别 hook (用户可注入自定义识别函数)
-        self.captcha_solver: Optional[Callable[[bytes], str]] = None
+        self.captcha_solver: Callable[[bytes], str] | None = None
 
     # ------------------------------------------------------------------
     # 公共 API
     # ------------------------------------------------------------------
-    def get(self, url: str, platform: str = "", referer: Optional[str] = None,
-            extra_headers: Optional[dict] = None, params: Optional[dict] = None,
-            timeout: Optional[int] = None) -> RequestResult:
+    def get(self, url: str, platform: str = "", referer: str | None = None,
+            extra_headers: dict | None = None, params: dict | None = None,
+            timeout: int | None = None) -> RequestResult:
         """
         发起 GET 请求, 自动反爬
 
@@ -248,9 +248,9 @@ class AntiCrawlSession:
         return self._request("GET", url, platform, referer, extra_headers,
                             params=params, timeout=timeout)
 
-    def post(self, url: str, platform: str = "", referer: Optional[str] = None,
-             extra_headers: Optional[dict] = None, json_body: Optional[dict] = None,
-             data: Optional[dict] = None, timeout: Optional[int] = None) -> RequestResult:
+    def post(self, url: str, platform: str = "", referer: str | None = None,
+             extra_headers: dict | None = None, json_body: dict | None = None,
+             data: dict | None = None, timeout: int | None = None) -> RequestResult:
         """发起 POST 请求, 自动反爬"""
         return self._request("POST", url, platform, referer, extra_headers,
                             json_body=json_body, data=data, timeout=timeout)
@@ -259,9 +259,9 @@ class AntiCrawlSession:
     # 内部实现
     # ------------------------------------------------------------------
     def _request(self, method: str, url: str, platform: str,
-                 referer: Optional[str], extra_headers: Optional[dict],
-                 params: Optional[dict] = None, json_body: Optional[dict] = None,
-                 data: Optional[dict] = None, timeout: Optional[int] = None) -> RequestResult:
+                 referer: str | None, extra_headers: dict | None,
+                 params: dict | None = None, json_body: dict | None = None,
+                 data: dict | None = None, timeout: int | None = None) -> RequestResult:
         timeout = timeout or self.cfg.request_timeout
         start = time.time()
         result = RequestResult(success=False, url=url, elapsed=0.0)
@@ -387,8 +387,8 @@ class AntiCrawlSession:
             return False
 
     def _playwright_fallback(self, method: str, url: str, platform: str,
-                            headers: dict, params: Optional[dict],
-                            json_body: Optional[dict], data: Optional[dict],
+                            headers: dict, params: dict | None,
+                            json_body: dict | None, data: dict | None,
                             timeout: int) -> RequestResult:
         """
         使用 playwright headless 浏览器降级请求
@@ -454,10 +454,10 @@ class AntiCrawlSession:
 
 __all__ = [
     "USER_AGENTS",
-    "random_ua",
-    "default_headers",
-    "ProxyPool",
-    "CookiePool",
     "AntiCrawlSession",
+    "CookiePool",
+    "ProxyPool",
     "RequestResult",
+    "default_headers",
+    "random_ua",
 ]

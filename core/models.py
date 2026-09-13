@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import List, Optional
 
 
 def _norm_title(s: str) -> str:
@@ -69,7 +68,7 @@ class Product:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Product":
+    def from_dict(cls, d: dict) -> Product:
         return cls(
             platform=d.get("platform", ""),
             title=d.get("title", ""),
@@ -99,7 +98,7 @@ class CrawlResult:
     """
     keyword: str
     platform: str
-    products: List[Product] = field(default_factory=list)
+    products: list[Product] = field(default_factory=list)
     used_mock: bool = False
     error: str = ""
     elapsed: float = 0.0
@@ -115,4 +114,4 @@ class CrawlResult:
         }
 
 
-__all__ = ["Product", "CrawlResult", "_norm_title"]
+__all__ = ["CrawlResult", "Product", "_norm_title"]

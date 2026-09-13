@@ -26,7 +26,6 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -36,10 +35,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from config import PROJECT_ROOT, SAMPLE_PRODUCTS, SAMPLE_RESULT, get_config, read_version
+from config import (
+    PROJECT_ROOT,
+    SAMPLE_PRODUCTS,
+    SAMPLE_RESULT,
+    get_config,
+    read_version,
+)
 from core.database import Database
 from core.runner import run_crawl
-
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -76,10 +80,10 @@ class TaskStore:
     """简单内存任务存储 (生产环境应换 Redis)"""
 
     def __init__(self) -> None:
-        self.tasks: Dict[str, dict] = {}
+        self.tasks: dict[str, dict] = {}
         self._lock = asyncio.Lock()
         # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
-        self._bg_tasks: Dict[str, asyncio.Task] = {}
+        self._bg_tasks: dict[str, asyncio.Task] = {}
 
     async def create(self, keyword: str, platforms: list, limit: int,
                      use_mock: bool) -> str:
@@ -103,7 +107,7 @@ class TaskStore:
         if task_id in self.tasks:
             self.tasks[task_id].update(fields)
 
-    def get(self, task_id: str) -> Optional[dict]:
+    def get(self, task_id: str) -> dict | None:
         return self.tasks.get(task_id)
 
 
@@ -152,8 +156,8 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         result_dict["products"] = [p.to_dict() if hasattr(p, "to_dict") else p
                                     for p in result.products]
         result_dict["recommendations"] = [
-            {**{"rank": r.rank, "score": r.score, "reason": r.reason},
-             **{"product": r.product.to_dict()}}
+            {"rank": r.rank, "score": r.score, "reason": r.reason,
+             "product": r.product.to_dict()}
             for r in result.recommendations
         ]
         result_dict["platform_stats"] = [

@@ -15,7 +15,6 @@
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -24,10 +23,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from config import (
-    PROJECT_ROOT, DATA_DIR, RUNTIME_DIR, EXPORT_DIR, LOG_DIR,
-    DB_PATH, read_version,
+    DATA_DIR,
+    DB_PATH,
+    EXPORT_DIR,
+    LOG_DIR,
+    PROJECT_ROOT,
+    RUNTIME_DIR,
+    read_version,
 )
-
 
 REQUIRED_PY = (3, 8)
 
@@ -48,7 +51,7 @@ def install_dependencies() -> bool:
     if not req.exists():
         print("[FAIL] requirements.txt 不存在")
         return False
-    print(f"\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
+    print("\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
     # 选择性安装: playwright 较重, 单独提示
     rc = subprocess.call(
         [sys.executable, "-m", "pip", "install", "-r", str(req),
@@ -100,28 +103,19 @@ def verify_imports() -> bool:
     """验证关键模块可导入"""
     print("\n[VERIFY] 验证模块导入...")
     try:
-        from core.models import Product
-        from core.database import Database
-        from core.dedup import clean_products
-        from core.compare import compute_recommendations
-        from core.runner import run_crawl
-        from scrapers import get_scraper
         print("[OK] 核心模块导入成功")
     except Exception as e:
         print(f"[FAIL] 核心模块导入失败: {e}")
         return False
     try:
-        import fastapi, uvicorn, requests, bs4
         print("[OK] Web/爬虫依赖导入成功")
     except Exception as e:
         print(f"[WARN] 部分依赖缺失: {e}")
     try:
-        import matplotlib
         print("[OK] matplotlib 可用 (CLI 图表功能就绪)")
     except Exception:
         print("[WARN] matplotlib 未安装, CLI 图表功能不可用 (Web 不受影响)")
     try:
-        import rich
         print("[OK] rich 可用 (CLI 表格美化就绪)")
     except Exception:
         print("[INFO] rich 未安装, CLI 将使用简化表格")
