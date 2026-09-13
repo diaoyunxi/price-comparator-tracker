@@ -15,16 +15,13 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import List
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
-from config import get_config
 from core.dedup import parse_price, parse_sales
 from core.models import Product
 from scrapers.base import BaseScraper
-
 
 logger = logging.getLogger("scraper.jd")
 
@@ -35,7 +32,7 @@ class JDScraper(BaseScraper):
     platform = "jd"
     platform_name = "京东"
 
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         京东搜索: 优先移动端 H5
 
@@ -72,7 +69,7 @@ class JDScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """
         解析移动端 H5 搜索结果
 
@@ -81,7 +78,7 @@ class JDScraper(BaseScraper):
         标题: <div class="search_p_title"><a>...</a></div>
         链接: <a href="//item.m.jd.com/product/12345.html">
         """
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -92,7 +89,7 @@ class JDScraper(BaseScraper):
         if not items:
             # 退化: 通用提取所有带价格的卡片
             items = soup.find_all(["li", "div"],
-                                 class_=re.compile(r"(item|goods|product)", re.I))
+                                 class_=re.compile(r"(item|goods|product)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -143,13 +140,13 @@ class JDScraper(BaseScraper):
                 continue
         return products
 
-    def _parse_pc(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_pc(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """
         解析 PC 端搜索结果页 (备用)
 
         京东 PC 页中商品数据常嵌入 <script> 中的 glb/jsonp 变量
         """
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -159,7 +156,7 @@ class JDScraper(BaseScraper):
         for script in soup.find_all("script"):
             text = script.string or ""
             # 查找 window.__INITIAL_STATE__ 或类似 JSON 数据
-            m = re.search(r"searchInfo\s*[:=]\s*(\[.*?\])\s*[;<]", text, re.S)
+            m = re.search(r"searchInfo\s*[:=]\s*(\[.*?\])\s*[;<]", text, re.DOTALL)
             if m:
                 try:
                     data = json.loads(m.group(1))

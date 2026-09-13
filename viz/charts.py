@@ -19,13 +19,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 from config import EXPORT_DIR
 from core.compare import PlatformStats
 from core.database import Database
 from core.models import Product
-
 
 logger = logging.getLogger("viz")
 
@@ -64,9 +62,9 @@ _setup_chinese_font()
 # ---------------------------------------------------------------------------
 # 图表函数
 # ---------------------------------------------------------------------------
-def chart_platform_price_box(products: List[Product],
-                             platform_names: Optional[dict] = None,
-                             save_path: Optional[str] = None) -> str:
+def chart_platform_price_box(products: list[Product],
+                             platform_names: dict | None = None,
+                             save_path: str | None = None) -> str:
     """
     平台价格对比箱线图
 
@@ -93,7 +91,7 @@ def chart_platform_price_box(products: List[Product],
         return ""
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    labels = [platform_names.get(k, k) for k in groups.keys()]
+    labels = [platform_names.get(k, k) for k in groups]
     data = list(groups.values())
     # matplotlib 3.9+ 弃用 labels, 改用 tick_labels; 兼容旧版
     import matplotlib as _mpl
@@ -118,9 +116,9 @@ def chart_platform_price_box(products: List[Product],
     return _save_or_show(fig, save_path, "box")
 
 
-def chart_price_distribution(products: List[Product],
+def chart_price_distribution(products: list[Product],
                              bins: int = 20,
-                             save_path: Optional[str] = None) -> str:
+                             save_path: str | None = None) -> str:
     """
     商品价格分布柱状图
 
@@ -143,7 +141,7 @@ def chart_price_distribution(products: List[Product],
     n, bins_arr, patches = ax.hist(prices, bins=bins, color="#4ECDC4",
                                     edgecolor="white", alpha=0.8)
     # 颜色渐变 (低价绿 -> 高价红)
-    import matplotlib.cm as cm
+    from matplotlib import cm
     norm = plt.Normalize(min(prices), max(prices))
     for patch, left in zip(patches, bins_arr[:-1]):
         patch.set_facecolor(cm.RdYlGn_r(norm(left)))
@@ -161,8 +159,8 @@ def chart_price_distribution(products: List[Product],
     return _save_or_show(fig, save_path, "distribution")
 
 
-def chart_platform_avg(stats: List[PlatformStats],
-                       save_path: Optional[str] = None) -> str:
+def chart_platform_avg(stats: list[PlatformStats],
+                       save_path: str | None = None) -> str:
     """
     平台均价对比柱状图
 
@@ -212,7 +210,7 @@ def chart_platform_avg(stats: List[PlatformStats],
 
 def chart_price_trend(db: Database, url_hash: str,
                       title: str = "", days: int = 30,
-                      save_path: Optional[str] = None) -> str:
+                      save_path: str | None = None) -> str:
     """
     单商品价格趋势折线图
 
@@ -268,7 +266,7 @@ def chart_price_trend(db: Database, url_hash: str,
     return _save_or_show(fig, save_path, f"trend_{url_hash}")
 
 
-def _save_or_show(fig, save_path: Optional[str], prefix: str) -> str:
+def _save_or_show(fig, save_path: str | None, prefix: str) -> str:
     """保存图表到文件, 返回路径"""
     import time as _t
     if save_path is None:
@@ -282,8 +280,8 @@ def _save_or_show(fig, save_path: Optional[str], prefix: str) -> str:
 
 
 __all__ = [
+    "chart_platform_avg",
     "chart_platform_price_box",
     "chart_price_distribution",
-    "chart_platform_avg",
     "chart_price_trend",
 ]

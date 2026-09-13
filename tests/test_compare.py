@@ -18,11 +18,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest
 
 from core.compare import (
-    normalize,
-    compute_recommendations,
-    platform_stats,
-    cheapest_vs_most_expensive,
     build_compare_table,
+    cheapest_vs_most_expensive,
+    compute_recommendations,
+    normalize,
+    platform_stats,
 )
 from core.models import Product
 

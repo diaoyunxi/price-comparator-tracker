@@ -15,8 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import SAMPLE_PRODUCTS, SAMPLE_RESULT, get_config
 from core.compare import (
-    cheapest_vs_most_expensive, compute_recommendations,
-    platform_stats, build_compare_table,
+    build_compare_table,
+    cheapest_vs_most_expensive,
+    compute_recommendations,
+    platform_stats,
 )
 from core.dedup import clean_products
 from core.models import Product

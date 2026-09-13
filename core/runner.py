@@ -14,19 +14,20 @@ from __future__ import annotations
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
+from dataclasses import asdict, dataclass, field
 
 from config import get_config
 from core.compare import (
-    Recommendation, PlatformStats, build_compare_table,
-    compute_recommendations, platform_stats, cheapest_vs_most_expensive,
+    PlatformStats,
+    Recommendation,
+    cheapest_vs_most_expensive,
+    compute_recommendations,
+    platform_stats,
 )
 from core.database import Database
 from core.dedup import clean_products
 from core.models import CrawlResult, Product
 from scrapers import get_scraper
-
 
 logger = logging.getLogger("runner")
 
@@ -39,22 +40,22 @@ class AggregatedResult:
     包含完整链路产出: 原始统计 / 清洗后商品 / 平台对比 / 性价比推荐 / 价差信息
     """
     keyword: str
-    platforms: List[str]
+    platforms: list[str]
     started_at: str
     elapsed: float = 0.0
     # 各平台原始采集结果 (用于展示 used_mock/error)
-    raw_results: List[dict] = field(default_factory=list)
+    raw_results: list[dict] = field(default_factory=list)
     # 清洗后商品 (按价格升序)
-    products: List[Product] = field(default_factory=list)
+    products: list[Product] = field(default_factory=list)
     # 清洗统计
     clean_stats: dict = field(default_factory=dict)
     # 平台对比统计
-    platform_stats: List[PlatformStats] = field(default_factory=list)
+    platform_stats: list[PlatformStats] = field(default_factory=list)
     # 性价比推荐
-    recommendations: List[Recommendation] = field(default_factory=list)
+    recommendations: list[Recommendation] = field(default_factory=list)
     # 价差信息
-    cheapest: Optional[Product] = None
-    most_expensive: Optional[Product] = None
+    cheapest: Product | None = None
+    most_expensive: Product | None = None
     price_gap: float = 0.0
     price_gap_ratio: float = 0.0
     # 总条数
@@ -67,10 +68,10 @@ class AggregatedResult:
 
 
 def run_crawl(keyword: str,
-              platforms: Optional[List[str]] = None,
-              limit_per_platform: Optional[int] = None,
+              platforms: list[str] | None = None,
+              limit_per_platform: int | None = None,
               use_mock: bool = False,
-              db: Optional[Database] = None,
+              db: Database | None = None,
               parallel: bool = True) -> AggregatedResult:
     """
     执行完整采集流程: 抓取 → 清洗 → 入库 → 对比 → 推荐
@@ -96,7 +97,7 @@ def run_crawl(keyword: str,
                 keyword, platforms, limit, use_mock)
 
     # 1. 调度爬虫
-    raw_results: List[CrawlResult] = []
+    raw_results: list[CrawlResult] = []
     if use_mock:
         # 直接走 Mock
         from scrapers.mock import generate_mock_for_platform
@@ -128,7 +129,7 @@ def run_crawl(keyword: str,
             raw_results.append(_crawl_one(keyword, plat, limit))
 
     # 2. 合并所有商品
-    all_products: List[Product] = []
+    all_products: list[Product] = []
     for r in raw_results:
         all_products.extend(r.products)
 

@@ -7,10 +7,8 @@
 
 from __future__ import annotations
 
-import os
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List
 
 try:
     import yaml  # 可选依赖, 缺失时使用默认配置
@@ -104,7 +102,7 @@ class AppConfig:
     db: DBConfig = field(default_factory=DBConfig)
     web: WebConfig = field(default_factory=WebConfig)
     # 平台标识 -> 中文名
-    platforms: Dict[str, str] = field(default_factory=lambda: {
+    platforms: dict[str, str] = field(default_factory=lambda: {
         "jd": "京东",
         "taobao": "淘宝",
         "pdd": "拼多多",
@@ -163,19 +161,19 @@ def load_local_config(path: str | None = None) -> AppConfig:
 
 
 __all__ = [
-    "PROJECT_ROOT",
     "DATA_DIR",
-    "RUNTIME_DIR",
+    "DB_PATH",
     "EXPORT_DIR",
     "LOG_DIR",
-    "DB_PATH",
+    "PROJECT_ROOT",
+    "RUNTIME_DIR",
     "SAMPLE_PRODUCTS",
     "SAMPLE_RESULT",
-    "read_version",
     "AppConfig",
     "CrawlConfig",
     "DBConfig",
     "WebConfig",
     "get_config",
     "load_local_config",
+    "read_version",
 ]

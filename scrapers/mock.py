@@ -18,10 +18,8 @@ from __future__ import annotations
 
 import hashlib
 import random
-from typing import List
 
 from core.models import Product
-
 
 # ---------------------------------------------------------------------------
 # 词库
@@ -110,7 +108,7 @@ class MockScraper:
     platform = "mock"
     platform_name = "模拟数据"
 
-    def search(self, keyword: str, limit: int = 30) -> "CrawlResult":
+    def search(self, keyword: str, limit: int = 30) -> CrawlResult:
         """
         生成 Mock 商品
 
@@ -123,7 +121,7 @@ class MockScraper:
         """
         from core.models import CrawlResult
         base = _base_price_for_keyword(keyword)
-        products: List[Product] = []
+        products: list[Product] = []
         for i in range(limit):
             title = _gen_title(keyword)
             sku = _hash_sku(keyword, i, "mock")
@@ -142,7 +140,7 @@ class MockScraper:
                           products=products, used_mock=True, elapsed=0.0)
 
 
-def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> List[Product]:
+def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> list[Product]:
     """
     为指定平台生成 Mock 商品 (用于真实爬虫回退)
 
@@ -156,7 +154,7 @@ def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> 
     """
     base = _base_price_for_keyword(keyword)
     url_tpl = URL_TEMPLATES.get(platform, "https://example.com/{sku}")
-    products: List[Product] = []
+    products: list[Product] = []
     for i in range(limit):
         title = _gen_title(keyword)
         sku = _hash_sku(keyword, i, platform)
@@ -174,7 +172,7 @@ def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> 
     return products
 
 
-def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
+def generate_sample_dataset(keyword: str = "蓝牙耳机") -> list[Product]:
     """
     生成一份固定的示例数据集 (用于 Web 初始化展示)
 
@@ -188,17 +186,17 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
     """
     # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
     local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])
-    result: List[Product] = []
+    result: list[Product] = []
     for platform in ("jd", "taobao", "pdd"):
         result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
     return result
 
 
-def _generate_mock_for_platform_with_rng(keyword: str, platform: str, limit: int, rng: random.Random) -> List[Product]:
+def _generate_mock_for_platform_with_rng(keyword: str, platform: str, limit: int, rng: random.Random) -> list[Product]:
     """使用指定 Random 实例为平台生成 Mock 商品 (供 generate_sample_dataset 内部使用)"""
     base = _base_price_for_keyword(keyword)
     url_tpl = URL_TEMPLATES.get(platform, "https://example.com/{sku}")
-    products: List[Product] = []
+    products: list[Product] = []
     for i in range(limit):
         title = _gen_title_with_rng(keyword, rng)
         sku = _hash_sku(keyword, i, platform)
