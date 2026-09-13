@@ -16,10 +16,8 @@ import json
 import logging
 import sys
 import urllib.request
-from typing import Optional, Tuple
 
 from config import PROJECT_ROOT, read_version
-
 
 logger = logging.getLogger("updater")
 
@@ -28,6 +26,7 @@ logger = logging.getLogger("updater")
 GITHUB_REPO = "price-comparator-tracker"
 # 由于不确定用户名, 使用环境变量优先
 import os
+
 GITHUB_OWNER = os.environ.get("PRICE_TRACKER_GH_OWNER", "")
 
 
@@ -45,7 +44,7 @@ def _parse_version(v: str) -> tuple:
 
 
 def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
-                         timeout: int = 5) -> Optional[dict]:
+                         timeout: int = 5) -> dict | None:
     """
     拉取 GitHub 最新 release 信息
 
@@ -107,7 +106,7 @@ def _detect_owner_from_git() -> str:
     return ""
 
 
-def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
+def check_for_updates(silent: bool = True) -> tuple[bool, dict | None]:
     """
     检查是否有更新
 
@@ -133,7 +132,7 @@ def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
         print(f"  下载地址: {release.get('html_url')}")
         assets = release.get("assets") or []
         if assets:
-            print(f"  可下载文件:")
+            print("  可下载文件:")
             for a in assets[:5]:
                 print(f"    - {a.get('name')}  ({a.get('size', 0) // 1024} KB)")
                 print(f"      {a.get('browser_download_url')}")

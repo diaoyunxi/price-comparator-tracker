@@ -38,12 +38,11 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import List, Optional
 
 # 让 `python cli.py` 直接运行时也能找到包
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import get_config, read_version, EXPORT_DIR
+from config import EXPORT_DIR, get_config, read_version
 from core.database import Database
 from core.runner import run_crawl
 
@@ -64,7 +63,7 @@ def _setup_logging(verbose: bool = False) -> None:
 # ---------------------------------------------------------------------------
 # Rich 表格渲染 (缺失时退化 plain text)
 # ---------------------------------------------------------------------------
-def _render_table(headers: List[str], rows: List[List[str]], title: str = "") -> None:
+def _render_table(headers: list[str], rows: list[list[str]], title: str = "") -> None:
     """渲染表格, 优先 rich, 缺失则退化"""
     try:
         from rich.console import Console
@@ -106,7 +105,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     print(f"\n[1/4] 关键词: {args.keyword}")
     print(f"[2/4] 平台: {', '.join(_platform_name(p) for p in platforms)} (共 {len(platforms)} 个)")
     print(f"[3/4] 每平台采集: {args.limit} 条, 模式: {'Mock' if args.mock else '真实(失败回退Mock)'}")
-    print(f"[4/4] 开始采集...\n")
+    print("[4/4] 开始采集...\n")
 
     result = run_crawl(
         keyword=args.keyword,
@@ -175,7 +174,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     # 5. 价差信息
     # ------------------------------------------------------------------
     if result.cheapest and result.most_expensive:
-        print(f"\n价差分析:")
+        print("\n价差分析:")
         print(f"  最便宜: [{_platform_name(result.cheapest.platform)}] "
               f"{result.cheapest.title[:30]} ¥{result.cheapest.price:.2f}")
         print(f"  最贵:   [{_platform_name(result.most_expensive.platform)}] "
@@ -248,9 +247,9 @@ def _generate_charts(result, db, trend_days: int) -> None:
     """生成图表"""
     try:
         from viz.charts import (
+            chart_platform_avg,
             chart_platform_price_box,
             chart_price_distribution,
-            chart_platform_avg,
             chart_price_trend,
         )
     except ImportError as e:
@@ -412,7 +411,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)

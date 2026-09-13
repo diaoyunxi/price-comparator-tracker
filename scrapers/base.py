@@ -13,12 +13,10 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 from config import get_config
 from core.anti_crawl import AntiCrawlSession
 from core.models import CrawlResult, Product
-
 
 logger = logging.getLogger("scraper")
 
@@ -38,7 +36,7 @@ class BaseScraper(ABC):
     #: 平台中文名
     platform_name: str = "未知"
 
-    def __init__(self, session: Optional[AntiCrawlSession] = None) -> None:
+    def __init__(self, session: AntiCrawlSession | None = None) -> None:
         self.cfg = get_config().crawl
         self.session = session or AntiCrawlSession()
 
@@ -94,7 +92,7 @@ class BaseScraper(ABC):
     # 子类实现
     # ------------------------------------------------------------------
     @abstractmethod
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         子类实现真实爬取逻辑
 
