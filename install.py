@@ -48,7 +48,7 @@ def install_dependencies() -> bool:
     if not req.exists():
         print("[FAIL] requirements.txt 不存在")
         return False
-    print(f"\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
+    print("\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
     # 选择性安装: playwright 较重, 单独提示
     rc = subprocess.call(
         [sys.executable, "-m", "pip", "install", "-r", str(req),
@@ -130,7 +130,7 @@ def verify_imports() -> bool:
 
 def print_usage() -> None:
     """打印使用指引"""
-    print(f"""
+    print("""
 {'=' * 60}
   电商商品价格采集与对比工具 v{read_version()} - 安装完成
 {'=' * 60}
