@@ -143,29 +143,27 @@ class Database:
             )
             for p in products
         ]
-        with self._conn() as conn:
-            with _lock:
-                conn.executemany(
-                    """INSERT INTO products
+        with self._conn() as conn, _lock:
+            conn.executemany(
+                """INSERT INTO products
                        (keyword, platform, title, price, sales, shop, shop_rating,
                         url, url_hash, image_url, sku_id, fetched_at, fetched_date)
                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                    rows,
-                )
+                rows,
+            )
         return len(rows)
 
     def save_meta(self, keyword: str, platform: str, used_mock: bool,
                   error: str, elapsed: float) -> None:
         """记录采集任务元信息"""
-        with self._conn() as conn:
-            with _lock:
-                conn.execute(
-                    """INSERT INTO crawl_meta
+        with self._conn() as conn, _lock:
+            conn.execute(
+                """INSERT INTO crawl_meta
                        (keyword, platform, used_mock, error, elapsed, created_at)
                        VALUES (?,?,?,?,?,?)""",
-                    (keyword, platform, int(used_mock), error, elapsed,
-                     datetime.now().isoformat(timespec="seconds")),
-                )
+                (keyword, platform, int(used_mock), error, elapsed,
+                 datetime.now().isoformat(timespec="seconds")),
+            )
 
     # ------------------------------------------------------------------
     # 查询
@@ -271,12 +269,11 @@ class Database:
         if retention_days <= 0:
             return 0
         cutoff = (datetime.now() - timedelta(days=retention_days)).strftime("%Y-%m-%d")
-        with self._conn() as conn:
-            with _lock:
-                cur = conn.execute(
-                    "DELETE FROM products WHERE fetched_date < ?", (cutoff,)
-                )
-                return cur.rowcount
+        with self._conn() as conn, _lock:
+            cur = conn.execute(
+                "DELETE FROM products WHERE fetched_date < ?", (cutoff,)
+            )
+            return cur.rowcount
 
     # ------------------------------------------------------------------
     # 内部工具
