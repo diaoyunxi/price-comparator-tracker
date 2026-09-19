@@ -138,7 +138,6 @@ def load_local_config(path: str | None = None) -> AppConfig:
     Returns:
         更新后的 AppConfig 实例
     """
-    global _config
     cfg_path = Path(path) if path else PROJECT_ROOT / "config.local.yaml"
     if not cfg_path.exists() or yaml is None:
         return _config
