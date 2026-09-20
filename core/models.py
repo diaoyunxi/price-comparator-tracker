@@ -49,7 +49,7 @@ class Product:
     sku_id: str = ""
 
     # 运行时附加字段 (不入库)
-    fetched_at: str = field(default_factory=lambda: datetime.now().isoformat(timespec="seconds"))
+    fetched_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
     # ------------------------------------------------------------------
     # 派生属性
@@ -80,7 +80,7 @@ class Product:
             url=d.get("url", ""),
             image_url=d.get("image_url", ""),
             sku_id=d.get("sku_id", ""),
-            fetched_at=d.get("fetched_at", datetime.now().isoformat(timespec="seconds")),
+            fetched_at=d.get("fetched_at", datetime.now(timezone.utc).isoformat(timespec="seconds")),
         )
 
 
