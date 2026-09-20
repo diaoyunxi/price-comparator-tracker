@@ -38,12 +38,12 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 # 让 `python cli.py` 直接运行时也能找到包
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import get_config, read_version, EXPORT_DIR
+from config import EXPORT_DIR, get_config, read_version
 from core.database import Database
 from core.runner import run_crawl
 
@@ -64,7 +64,7 @@ def _setup_logging(verbose: bool = False) -> None:
 # ---------------------------------------------------------------------------
 # Rich 表格渲染 (缺失时退化 plain text)
 # ---------------------------------------------------------------------------
-def _render_table(headers: List[str], rows: List[List[str]], title: str = "") -> None:
+def _render_table(headers: list[str], rows: list[list[str]], title: str = "") -> None:
     """渲染表格, 优先 rich, 缺失则退化"""
     try:
         from rich.console import Console
