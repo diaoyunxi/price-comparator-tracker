@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import secrets
 import random
 import time
 import logging
@@ -68,7 +69,7 @@ USER_AGENTS: List[str] = [
 
 def random_ua() -> str:
     """随机返回一个 User-Agent"""
-    return random.choice(USER_AGENTS)
+    return secrets.choice(USER_AGENTS)
 
 
 # ---------------------------------------------------------------------------
@@ -358,7 +359,8 @@ class AntiCrawlSession:
     def _backoff(self, attempt: int) -> None:
         """指数退避 + 随机抖动"""
         delay = self.cfg.backoff_base * (2 ** (attempt - 1))
-        delay = min(delay + random.uniform(0, 1.5), 30.0)
+        _rng = secrets.SystemRandom()
+        delay = min(delay + _rng.uniform(0, 1.5), 30.0)
         logger.debug("退避 %.2fs", delay)
         time.sleep(delay)
 
@@ -447,8 +449,9 @@ class AntiCrawlSession:
     # ------------------------------------------------------------------
     def random_delay(self) -> None:
         """请求间随机延迟 (2-5s + 抖动)"""
-        delay = random.uniform(self.cfg.request_delay_min, self.cfg.request_delay_max)
-        delay += random.uniform(0, 0.8)
+        _rng = secrets.SystemRandom()
+        delay = _rng.uniform(self.cfg.request_delay_min, self.cfg.request_delay_max)
+        delay += _rng.uniform(0, 0.8)
         time.sleep(delay)
 
 
