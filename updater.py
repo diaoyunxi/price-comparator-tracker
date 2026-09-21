@@ -149,7 +149,7 @@ def main() -> int:
     if not release:
         print("[updater] 无法获取远端 release 信息 (可能未配置 owner 或网络问题)")
         return 1
-    return 0 if has_update else 0
+    return 0 if has_update else 1
 
 
 if __name__ == "__main__":
