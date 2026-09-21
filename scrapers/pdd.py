@@ -208,10 +208,9 @@ class PddScraper(BaseScraper):
                     continue
                 price = it.get("price") or it.get("min_normal_price") or -1
                 # 拼多多 API 价格可能以分为单位 (整数且无小数点时大概率是分)
-                if isinstance(price, (int, float)) and price > 0:
-                    # 价格 > 10000 分 (即 100 元以上) 且为整数时视为分单位
-                    if price >= 10000 and price == int(price):
-                        price = price / 100
+                # 价格 > 10000 分 (即 100 元以上) 且为整数时视为分单位
+                if isinstance(price, (int, float)) and price > 0 and price >= 10000 and price == int(price):
+                    price = price / 100
                 goods_id = str(it.get("goodsId") or it.get("goods_id") or "")
                 products.append(Product(
                     platform=self.platform,
@@ -245,12 +244,11 @@ def _find_goods_list(data, depth=0):
     """递归查找商品列表"""
     if depth > 8:
         return []
-    if isinstance(data, list):
-        if data and isinstance(data[0], dict):
-            # 启发式: 元素包含 goodsName / goodsId / title 之一
-            if any("goodsName" in x or "goodsId" in x or "goods_name" in x
-                   for x in data[:3] if isinstance(x, dict)):
-                return data
+    if isinstance(data, list) and data and isinstance(data[0], dict):
+        # 启发式: 元素包含 goodsName / goodsId / title 之一
+        if any("goodsName" in x or "goodsId" in x or "goods_name" in x
+               for x in data[:3] if isinstance(x, dict)):
+            return data
         return []
     if isinstance(data, dict):
         for v in data.values():
