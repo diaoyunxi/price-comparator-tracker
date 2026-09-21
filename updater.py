@@ -88,9 +88,11 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
 def _detect_owner_from_git() -> str:
     """从 git remote 配置中检测 owner"""
     import subprocess
+    import shutil
     try:
+        git_path = shutil.which("git") or "git"
         r = subprocess.run(
-            ["git", "config", "--get", "remote.origin.url"],
+            [git_path, "config", "--get", "remote.origin.url"],
             cwd=str(PROJECT_ROOT), capture_output=True, text=True, timeout=3,
         )
         url = r.stdout.strip()
