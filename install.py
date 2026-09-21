@@ -178,7 +178,7 @@ def main() -> int:
     generate_sample()
     check_updates()
     print_usage()
-    return 0 if ok else 0
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
