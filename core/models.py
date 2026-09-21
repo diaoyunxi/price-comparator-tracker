@@ -115,4 +115,4 @@ class CrawlResult:
         }
 
 
-__all__ = ["Product", "CrawlResult", "_norm_title"]
+__all__ = ["CrawlResult", "Product", "_norm_title"]
