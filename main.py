@@ -152,8 +152,8 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         result_dict["products"] = [p.to_dict() if hasattr(p, "to_dict") else p
                                     for p in result.products]
         result_dict["recommendations"] = [
-            {**{"rank": r.rank, "score": r.score, "reason": r.reason},
-             **{"product": r.product.to_dict()}}
+            {"rank": r.rank, "score": r.score, "reason": r.reason,
+                          "product": r.product.to_dict()}
             for r in result.recommendations
         ]
         result_dict["platform_stats"] = [
