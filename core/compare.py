@@ -249,11 +249,11 @@ def cheapest_vs_most_expensive(products: List[Product]) -> dict:
 
 
 __all__ = [
-    "Recommendation",
     "PlatformStats",
-    "normalize",
-    "compute_recommendations",
-    "platform_stats",
+    "Recommendation",
     "build_compare_table",
     "cheapest_vs_most_expensive",
+    "compute_recommendations",
+    "normalize",
+    "platform_stats",
 ]

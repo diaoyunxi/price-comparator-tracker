@@ -21,7 +21,10 @@ def get_scraper(platform: str):
 
 
 __all__ = [
-    "BaseScraper", "MockScraper",
-    "JDScraper", "TaobaoScraper", "PddScraper",
+    "BaseScraper",
+    "JDScraper",
+    "MockScraper",
+    "PddScraper",
+    "TaobaoScraper",
     "get_scraper",
 ]

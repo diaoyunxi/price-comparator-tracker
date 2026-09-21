@@ -191,9 +191,9 @@ def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
 
 
 __all__ = [
-    "parse_price",
-    "parse_sales",
-    "parse_rating",
-    "clean_title",
     "clean_products",
+    "clean_title",
+    "parse_price",
+    "parse_rating",
+    "parse_sales",
 ]
