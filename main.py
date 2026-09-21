@@ -217,12 +217,16 @@ async def api_sample():
     """
     if not SAMPLE_RESULT.exists():
         try:
-            import subprocess
-            subprocess.run(
-                [sys.executable, str(PROJECT_ROOT / "tools" / "gen_sample.py")],
-                check=True, cwd=str(PROJECT_ROOT),
-                capture_output=True, timeout=30,
+            import asyncio
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, str(PROJECT_ROOT / "tools" / "gen_sample.py"),
+                cwd=str(PROJECT_ROOT),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+            if proc.returncode != 0:
+                raise Exception(f"Process failed with code {proc.returncode}")
         except Exception as e:
             logger.warning("自动生成示例失败: %s", e)
             return JSONResponse({"error": f"sample_not_ready: {e}"}, status_code=500)
