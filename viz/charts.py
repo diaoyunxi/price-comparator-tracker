@@ -93,12 +93,12 @@ def chart_platform_price_box(products: List[Product],
         return ""
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    labels = [platform_names.get(k, k) for k in groups.keys()]
+    labels = [platform_names.get(k, k) for k in groups]
     data = list(groups.values())
     # matplotlib 3.9+ 弃用 labels, 改用 tick_labels; 兼容旧版
     import matplotlib as _mpl
     _mpl_ver = tuple(int(x) for x in _mpl.__version__.split(".")[:2])
-    box_kwargs = dict(patch_artist=True, showmeans=True,
+    box_kwargs = {"patch_artist": True, "showmeans": True,
                       meanprops={"marker": "D", "markerfacecolor": "red",
                                  "markeredgecolor": "red", "markersize": 6})
     if _mpl_ver >= (3, 9):
@@ -140,10 +140,10 @@ def chart_price_distribution(products: List[Product],
         return ""
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    n, bins_arr, patches = ax.hist(prices, bins=bins, color="#4ECDC4",
+    _n, bins_arr, patches = ax.hist(prices, bins=bins, color="#4ECDC4",
                                     edgecolor="white", alpha=0.8)
     # 颜色渐变 (低价绿 -> 高价红)
-    import matplotlib.cm as cm
+    from matplotlib import cm
     norm = plt.Normalize(min(prices), max(prices))
     for patch, left in zip(patches, bins_arr[:-1]):
         patch.set_facecolor(cm.RdYlGn_r(norm(left)))

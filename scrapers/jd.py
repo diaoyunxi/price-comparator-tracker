@@ -92,7 +92,7 @@ class JDScraper(BaseScraper):
         if not items:
             # 退化: 通用提取所有带价格的卡片
             items = soup.find_all(["li", "div"],
-                                 class_=re.compile(r"(item|goods|product)", re.I))
+                                 class_=re.compile(r"(item|goods|product)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -159,7 +159,7 @@ class JDScraper(BaseScraper):
         for script in soup.find_all("script"):
             text = script.string or ""
             # 查找 window.__INITIAL_STATE__ 或类似 JSON 数据
-            m = re.search(r"searchInfo\s*[:=]\s*(\[.*?\])\s*[;<]", text, re.S)
+            m = re.search(r"searchInfo\s*[:=]\s*(\[.*?\])\s*[;<]", text, re.DOTALL)
             if m:
                 try:
                     data = json.loads(m.group(1))
