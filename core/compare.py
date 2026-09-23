@@ -180,17 +180,19 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
 
     result: List[PlatformStats] = []
     for plat, items in groups.items():
-        prices = [it.price for it in items if it.price > 0]
-        sales = [it.sales for it in items if it.sales >= 0]
-        ratings = [it.shop_rating for it in items if it.shop_rating >= 0]
-        if not prices:
+        # 仅对有效价格的商品计算统计，保证各维度基于同一商品子集
+        valid_items = [it for it in items if it.price > 0]
+        if not valid_items:
             continue
+        prices = [it.price for it in valid_items]
+        sales = [it.sales for it in valid_items if it.sales >= 0]
+        ratings = [it.shop_rating for it in valid_items if it.shop_rating >= 0]
         sorted_p = sorted(prices)
         n = len(sorted_p)
         median = sorted_p[n // 2] if n % 2 == 1 else (sorted_p[n // 2 - 1] + sorted_p[n // 2]) / 2
         result.append(PlatformStats(
             platform=platform_names.get(plat, plat),
-            count=len(prices),  # 只统计有效价格商品数量
+            count=len(valid_items),
             avg_price=round(sum(prices) / len(prices), 2),
             min_price=min(prices),
             max_price=max(prices),
