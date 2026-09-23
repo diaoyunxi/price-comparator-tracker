@@ -422,7 +422,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("\n已取消")
         return 130
     except Exception as e:
-        logging.getLogger("cli").exception("执行失败: %s", e)
+        logging.getLogger("cli").exception("执行失败")
         print(f"\n[ERROR] {e}")
         return 1
 
