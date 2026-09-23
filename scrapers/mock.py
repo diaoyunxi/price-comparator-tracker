@@ -187,7 +187,7 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
         90 条示例商品 (3 平台各 30 条)
     """
     # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
-    local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])
+    local_rng = random.Random(hashlib.sha256(keyword.encode("utf-8")).hexdigest()[:8])
     result: List[Product] = []
     for platform in ("jd", "taobao", "pdd"):
         result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
