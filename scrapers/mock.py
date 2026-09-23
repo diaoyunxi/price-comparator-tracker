@@ -20,7 +20,7 @@ import hashlib
 import random
 from typing import List
 
-from core.models import Product
+from core.models import CrawlResult, Product
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +121,6 @@ class MockScraper:
         Returns:
             CrawlResult
         """
-        from core.models import CrawlResult
         base = _base_price_for_keyword(keyword)
         products: List[Product] = []
         for i in range(limit):
