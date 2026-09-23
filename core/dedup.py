@@ -183,8 +183,11 @@ def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
         seen.add(p.dedup_key)
         deduped.append(p)
 
-    # 4. 排序: 有效价格升序, 无效价格 (-1) 排末尾
-    deduped.sort(key=lambda x: (x.price < 0, x.price if x.price > 0 else float("inf")))
+    # 4. 排序: 有效价格升序, 无效价格 (<=0) 排末尾
+    # 注意: 过滤条件为 price <= 0 (见上方), 此处排序键必须与之一致用 <= 0,
+    # 否则价格为 0 的异常商品会排在有效商品之后、但排在 -1 解析失败商品之前,
+    # 未能真正排到末尾。
+    deduped.sort(key=lambda x: (x.price <= 0, x.price if x.price > 0 else float("inf")))
 
     stats["output"] = len(deduped)
     return deduped, stats
