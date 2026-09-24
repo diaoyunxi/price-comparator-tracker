@@ -419,7 +419,6 @@ price-comparator-tracker/
 │   └── charts.py             # matplotlib 图表
 ├── web/
 │   ├── __init__.py
-│   ├── app.py                # (路由定义在 main.py)
 │   ├── static/
 │   │   └── style.css
 │   └── templates/
