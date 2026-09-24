@@ -15,6 +15,7 @@ Mock 数据生成器
 """
 
 from __future__ import annotations
+from core.models import CrawlResult
 
 import hashlib
 import random
@@ -121,7 +122,6 @@ class MockScraper:
         Returns:
             CrawlResult
         """
-        from core.models import CrawlResult
         base = _base_price_for_keyword(keyword)
         products: List[Product] = []
         for i in range(limit):
