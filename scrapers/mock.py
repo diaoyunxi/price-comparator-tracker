@@ -20,7 +20,7 @@ import hashlib
 import random
 from typing import List
 
-from core.models import Product
+from core.models import CrawlResult, Product
 
 
 # ---------------------------------------------------------------------------
