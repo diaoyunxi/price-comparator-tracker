@@ -103,7 +103,7 @@ def _detect_owner_from_git() -> str:
         if url.startswith("git@github.com:"):
             return url.split(":")[1].split("/")[0]
     except Exception:
-        pass
+        pass  # TODO: add proper error handling
     return ""
 
 

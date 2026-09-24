@@ -166,7 +166,7 @@ class JDScraper(BaseScraper):
                     for it in data:
                         products.append(self._item_from_pc_json(it))
                 except Exception:
-                    pass
+                    pass  # TODO: add proper error handling
                 if products:
                     return products[:limit]
 
