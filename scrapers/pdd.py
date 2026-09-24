@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import List
+
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
@@ -33,7 +33,7 @@ class PddScraper(BaseScraper):
     platform = "pdd"
     platform_name = "拼多多"
 
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         拼多多搜索: 优先移动端 H5
 
@@ -80,9 +80,9 @@ class PddScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """解析移动端 H5 搜索结果"""
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -141,9 +141,9 @@ class PddScraper(BaseScraper):
                 continue
         return products
 
-    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """从 HTML 中提取嵌入的 JSON 数据"""
-        products: List[Product] = []
+        products: list[Product] = []
         # 拼多多常把数据放在 window.__INITIAL_STATE__ 中
         m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*;?\s*</script>",
                      html, re.S)
@@ -177,9 +177,9 @@ class PddScraper(BaseScraper):
                 logger.debug("[%s] __INITIAL_STATE__ 解析失败: %s", self.platform, e)
         return products
 
-    def _parse_api_json(self, text: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_api_json(self, text: str, keyword: str, limit: int = 30) -> list[Product]:
         """解析 API JSON 响应"""
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             data = json.loads(text)
         except Exception as e:

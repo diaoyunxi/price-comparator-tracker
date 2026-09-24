@@ -5,7 +5,7 @@
 - search(keyword, limit) -> CrawlResult
 - 内置反爬会话 (AntiCrawlSession)
 - 失败自动回退 Mock 数据
-- 解析钩子 _parse(html/json) -> List[Product] 由子类实现
+- 解析钩子 _parse(html/json) -> list[Product] 由子类实现
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional
 
 from config import get_config
 from core.anti_crawl import AntiCrawlSession
@@ -30,7 +30,7 @@ class BaseScraper(ABC):
     子类需实现:
         platform: str                平台标识
         search_url(keyword) -> str  构造搜索 URL
-        parse(text) -> List[Product] 解析响应为商品列表
+        parse(text) -> list[Product] 解析响应为商品列表
     """
 
     #: 平台标识 (jd/taobao/pdd)
@@ -94,7 +94,7 @@ class BaseScraper(ABC):
     # 子类实现
     # ------------------------------------------------------------------
     @abstractmethod
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         子类实现真实爬取逻辑
 

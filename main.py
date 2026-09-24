@@ -26,7 +26,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -76,10 +76,10 @@ class TaskStore:
     """简单内存任务存储 (生产环境应换 Redis)"""
 
     def __init__(self) -> None:
-        self.tasks: Dict[str, dict] = {}
+        self.tasks: dict[str, dict] = {}
         self._lock = asyncio.Lock()
         # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
-        self._bg_tasks: Dict[str, asyncio.Task] = {}
+        self._bg_tasks: dict[str, asyncio.Task] = {}
 
     async def create(self, keyword: str, platforms: list, limit: int,
                      use_mock: bool) -> str:

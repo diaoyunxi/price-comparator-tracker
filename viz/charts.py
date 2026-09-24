@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from config import EXPORT_DIR
 from core.compare import PlatformStats
@@ -64,7 +64,7 @@ _setup_chinese_font()
 # ---------------------------------------------------------------------------
 # 图表函数
 # ---------------------------------------------------------------------------
-def chart_platform_price_box(products: List[Product],
+def chart_platform_price_box(products: list[Product],
                              platform_names: Optional[dict] = None,
                              save_path: Optional[str] = None) -> str:
     """
@@ -118,7 +118,7 @@ def chart_platform_price_box(products: List[Product],
     return _save_or_show(fig, save_path, "box")
 
 
-def chart_price_distribution(products: List[Product],
+def chart_price_distribution(products: list[Product],
                              bins: int = 20,
                              save_path: Optional[str] = None) -> str:
     """
@@ -161,7 +161,7 @@ def chart_price_distribution(products: List[Product],
     return _save_or_show(fig, save_path, "distribution")
 
 
-def chart_platform_avg(stats: List[PlatformStats],
+def chart_platform_avg(stats: list[PlatformStats],
                        save_path: Optional[str] = None) -> str:
     """
     平台均价对比柱状图
