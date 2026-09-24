@@ -17,7 +17,7 @@ import threading
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from config import DBConfig, get_config
 from core.models import Product
@@ -110,7 +110,7 @@ class Database:
     # ------------------------------------------------------------------
     # 写入
     # ------------------------------------------------------------------
-    def save_products(self, keyword: str, products: List[Product]) -> int:
+    def save_products(self, keyword: str, products: list[Product]) -> int:
         """
         批量保存商品快照
 
@@ -170,7 +170,7 @@ class Database:
     # ------------------------------------------------------------------
     # 查询
     # ------------------------------------------------------------------
-    def get_latest_by_keyword(self, keyword: str) -> List[Product]:
+    def get_latest_by_keyword(self, keyword: str) -> list[Product]:
         """
         获取某关键词最近一次采集的所有商品 (按 url_hash + 最新 fetched_at)
 
@@ -195,7 +195,7 @@ class Database:
             ).fetchall()
         return [self._row_to_product(r) for r in rows]
 
-    def get_price_trend(self, url_hash: str, days: int = 30) -> List[Tuple[str, float]]:
+    def get_price_trend(self, url_hash: str, days: int = 30) -> list[tuple[str, float]]:
         """
         查询某商品最近 N 天的价格趋势
 
@@ -218,7 +218,7 @@ class Database:
             ).fetchall()
         return [(r["fetched_date"], r["price"]) for r in rows]
 
-    def get_trend_for_keyword(self, keyword: str, days: int = 30) -> Dict[str, List[Tuple[str, float]]]:
+    def get_trend_for_keyword(self, keyword: str, days: int = 30) -> dict[str, list[tuple[str, float]]]:
         """
         批量查询关键词下所有商品的价格趋势
 
@@ -235,12 +235,12 @@ class Database:
                    ORDER BY url_hash, fetched_date""",
                 (keyword, since),
             ).fetchall()
-        result: Dict[str, List[Tuple[str, float]]] = {}
+        result: dict[str, list[tuple[str, float]]] = {}
         for r in rows:
             result.setdefault(r["url_hash"], []).append((r["fetched_date"], r["price"]))
         return result
 
-    def list_keywords(self, limit: int = 50) -> List[Tuple[str, str]]:
+    def list_keywords(self, limit: int = 50) -> list[tuple[str, str]]:
         """列出最近采集的关键词及时间"""
         with self._conn() as conn:
             rows = conn.execute(

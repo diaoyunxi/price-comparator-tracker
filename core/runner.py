@@ -15,7 +15,7 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
+from typing import Optional
 
 from config import get_config
 from core.compare import (
@@ -39,19 +39,19 @@ class AggregatedResult:
     包含完整链路产出: 原始统计 / 清洗后商品 / 平台对比 / 性价比推荐 / 价差信息
     """
     keyword: str
-    platforms: List[str]
+    platforms: list[str]
     started_at: str
     elapsed: float = 0.0
     # 各平台原始采集结果 (用于展示 used_mock/error)
-    raw_results: List[dict] = field(default_factory=list)
+    raw_results: list[dict] = field(default_factory=list)
     # 清洗后商品 (按价格升序)
-    products: List[Product] = field(default_factory=list)
+    products: list[Product] = field(default_factory=list)
     # 清洗统计
     clean_stats: dict = field(default_factory=dict)
     # 平台对比统计
-    platform_stats: List[PlatformStats] = field(default_factory=list)
+    platform_stats: list[PlatformStats] = field(default_factory=list)
     # 性价比推荐
-    recommendations: List[Recommendation] = field(default_factory=list)
+    recommendations: list[Recommendation] = field(default_factory=list)
     # 价差信息
     cheapest: Optional[Product] = None
     most_expensive: Optional[Product] = None
@@ -67,7 +67,7 @@ class AggregatedResult:
 
 
 def run_crawl(keyword: str,
-              platforms: Optional[List[str]] = None,
+              platforms: Optional[list[str]] = None,
               limit_per_platform: Optional[int] = None,
               use_mock: bool = False,
               db: Optional[Database] = None,
@@ -96,7 +96,7 @@ def run_crawl(keyword: str,
                 keyword, platforms, limit, use_mock)
 
     # 1. 调度爬虫
-    raw_results: List[CrawlResult] = []
+    raw_results: list[CrawlResult] = []
     if use_mock:
         # 直接走 Mock
         from scrapers.mock import generate_mock_for_platform
@@ -128,7 +128,7 @@ def run_crawl(keyword: str,
             raw_results.append(_crawl_one(keyword, plat, limit))
 
     # 2. 合并所有商品
-    all_products: List[Product] = []
+    all_products: list[Product] = []
     for r in raw_results:
         all_products.extend(r.products)
 

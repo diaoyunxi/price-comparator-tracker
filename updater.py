@@ -16,7 +16,7 @@ import json
 import logging
 import sys
 import urllib.request
-from typing import Optional, Tuple
+from typing import Optional
 
 from config import PROJECT_ROOT, read_version
 
@@ -107,7 +107,7 @@ def _detect_owner_from_git() -> str:
     return ""
 
 
-def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
+def check_for_updates(silent: bool = True) -> tuple[bool, Optional[dict]]:
     """
     检查是否有更新
 

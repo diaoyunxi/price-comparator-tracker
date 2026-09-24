@@ -23,7 +23,8 @@ import random
 import time
 import logging
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Optional
+from collections.abc import Callable
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -37,7 +38,7 @@ logger = logging.getLogger("anti_crawl")
 # ---------------------------------------------------------------------------
 # User-Agent 池
 # ---------------------------------------------------------------------------
-USER_AGENTS: List[str] = [
+USER_AGENTS: list[str] = [
     # 桌面 Chrome
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -74,7 +75,7 @@ def random_ua() -> str:
 # ---------------------------------------------------------------------------
 # 平台对应的默认请求头
 # ---------------------------------------------------------------------------
-def default_headers(platform: str, referer: Optional[str] = None) -> Dict[str, str]:
+def default_headers(platform: str, referer: Optional[str] = None) -> dict[str, str]:
     """
     根据平台生成默认请求头
 
@@ -122,7 +123,7 @@ class ProxyPool:
     """
 
     def __init__(self, file_path: Optional[str] = None) -> None:
-        self.proxies: List[str] = []
+        self.proxies: list[str] = []
         self._idx = 0
         if file_path:
             self.load(file_path)
@@ -168,7 +169,7 @@ class CookiePool:
         from pathlib import Path
         self.dir = Path(dir_path)
         self.dir.mkdir(parents=True, exist_ok=True)
-        self._cache: Dict[str, str] = {}
+        self._cache: dict[str, str] = {}
 
     def get(self, platform: str) -> str:
         """获取平台 Cookie"""

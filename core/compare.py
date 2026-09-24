@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Optional
 
 from core.models import Product
 
@@ -38,7 +38,7 @@ class PlatformStats:
     avg_rating: float
 
 
-def _min_max(values: List[float]) -> tuple:
+def _min_max(values: list[float]) -> tuple:
     """返回 (min, max); 空列表返回 (0, 1) 避免除零"""
     if not values:
         return 0.0, 1.0
@@ -48,7 +48,7 @@ def _min_max(values: List[float]) -> tuple:
     return lo, hi
 
 
-def normalize(values: List[float], invert: bool = False) -> List[float]:
+def normalize(values: list[float], invert: bool = False) -> list[float]:
     """
     Min-Max 归一化到 [0, 1]
 
@@ -75,10 +75,10 @@ THRESHOLD_RATING_HIGH = 0.7    # 评分归一化 >= 此值视为 "店铺评分�
 
 
 def compute_recommendations(
-    products: List[Product],
+    products: list[Product],
     top_n: int = 5,
     weights: Optional[dict] = None,
-) -> List[Recommendation]:
+) -> list[Recommendation]:
     """
     计算性价比推荐
 
@@ -106,25 +106,25 @@ def compute_recommendations(
     ratings = [p.shop_rating for p in products if p.shop_rating >= 0]
 
     # 建立产品对象(id) -> 归一化值 的字典映射, 避免过滤后列表索引与原 products 不对应
-    price_map: Dict[int, float] = {}
+    price_map: dict[int, float] = {}
     if prices:
         for p, nv in zip((p for p in products if p.price > 0),
                          normalize(prices, invert=True)):
             price_map[id(p)] = nv
 
-    sales_map: Dict[int, float] = {}
+    sales_map: dict[int, float] = {}
     if sales:
         for p, nv in zip((p for p in products if p.sales >= 0),
                          normalize(sales, invert=False)):
             sales_map[id(p)] = nv
 
-    rating_map: Dict[int, float] = {}
+    rating_map: dict[int, float] = {}
     if ratings:
         for p, nv in zip((p for p in products if p.shop_rating >= 0),
                          normalize(ratings, invert=False)):
             rating_map[id(p)] = nv
 
-    score_list: List[tuple] = []
+    score_list: list[tuple] = []
     for idx, p in enumerate(products):
         # 通过字典映射获取各维度归一化值, 缺失时默认 0.0
         p_score = price_map.get(id(p), 0.0)
@@ -140,7 +140,7 @@ def compute_recommendations(
 
     score_list.sort(key=lambda x: x[1], reverse=True)
 
-    recs: List[Recommendation] = []
+    recs: list[Recommendation] = []
     for rank, (idx, score, ps, ss, rs) in enumerate(score_list[:top_n], start=1):
         p = products[idx]
         # 生成推荐理由
@@ -162,7 +162,7 @@ def compute_recommendations(
     return recs
 
 
-def platform_stats(products: List[Product], platform_names: Optional[dict] = None) -> List[PlatformStats]:
+def platform_stats(products: list[Product], platform_names: Optional[dict] = None) -> list[PlatformStats]:
     """
     按平台聚合统计
 
@@ -174,11 +174,11 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
         各平台统计列表
     """
     platform_names = platform_names or {}
-    groups: Dict[str, List[Product]] = {}
+    groups: dict[str, list[Product]] = {}
     for p in products:
         groups.setdefault(p.platform, []).append(p)
 
-    result: List[PlatformStats] = []
+    result: list[PlatformStats] = []
     for plat, items in groups.items():
         prices = [it.price for it in items if it.price > 0]
         sales = [it.sales for it in items if it.sales >= 0]
@@ -201,7 +201,7 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
     return result
 
 
-def build_compare_table(products: List[Product]) -> List[dict]:
+def build_compare_table(products: list[Product]) -> list[dict]:
     """
     生成横向对比表格行 (供 CLI 富文本表格与 Web 表格共用)
 
@@ -224,7 +224,7 @@ def build_compare_table(products: List[Product]) -> List[dict]:
     return rows
 
 
-def cheapest_vs_most_expensive(products: List[Product]) -> dict:
+def cheapest_vs_most_expensive(products: list[Product]) -> dict:
     """
     找出最便宜与最贵的商品 (用于在结果摘要中突出展示)
 

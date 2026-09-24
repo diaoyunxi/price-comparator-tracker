@@ -11,7 +11,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 
 def _norm_title(s: str) -> str:
@@ -99,7 +99,7 @@ class CrawlResult:
     """
     keyword: str
     platform: str
-    products: List[Product] = field(default_factory=list)
+    products: list[Product] = field(default_factory=list)
     used_mock: bool = False
     error: str = ""
     elapsed: float = 0.0
