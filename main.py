@@ -200,7 +200,7 @@ async def index(request: Request):
             {"version": read_version(), "platforms": get_config().platforms},
         )
     except TypeError:
-        # 退化旧版 API
+        pass  # TODO: add proper error handling
         return templates.TemplateResponse("index.html", {
             "request": request,
             "version": read_version(),
