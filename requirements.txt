@@ -9,7 +9,7 @@ python-multipart==0.0.9
 
 # HTTP 爬虫
 requests==2.31.0
-urllib3==2.2.1
+urllib3>=2.7.0
 beautifulsoup4==4.12.3
 lxml==5.1.0
 
