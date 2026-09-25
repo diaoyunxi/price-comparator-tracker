@@ -75,14 +75,40 @@ db = Database()
 class TaskStore:
     """简单内存任务存储 (生产环境应换 Redis)"""
 
+    MAX_TASKS = 500            # 最大任务数
+    MAX_TASK_AGE_SECONDS = 3600  # 已完成任务最长保留 1 小时
+
     def __init__(self) -> None:
         self.tasks: Dict[str, dict] = {}
         self._lock = asyncio.Lock()
         # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
         self._bg_tasks: Dict[str, asyncio.Task] = {}
 
+    def _cleanup(self) -> None:
+        """清理过期和过多的任务，防止内存无限增长"""
+        now = time.time()
+        # 1. 移除超时的已完成/失败任务
+        expired = [
+            tid for tid, t in self.tasks.items()
+            if t["status"] in ("success", "failed")
+            and t.get("finished_at")
+            and (now - t["finished_at"]) > self.MAX_TASK_AGE_SECONDS
+        ]
+        for tid in expired:
+            self.tasks.pop(tid, None)
+        # 2. 若仍超限，按创建时间从旧到新删除已完成任务
+        if len(self.tasks) > self.MAX_TASKS:
+            finished = sorted(
+                [(tid, t) for tid, t in self.tasks.items()
+                 if t["status"] in ("success", "failed")],
+                key=lambda x: x[1].get("started_at", 0),
+            )
+            for tid, _ in finished[: len(self.tasks) - self.MAX_TASKS]:
+                self.tasks.pop(tid, None)
+
     async def create(self, keyword: str, platforms: list, limit: int,
                      use_mock: bool) -> str:
+        self._cleanup()
         task_id = uuid.uuid4().hex[:12]
         self.tasks[task_id] = {
             "task_id": task_id,
