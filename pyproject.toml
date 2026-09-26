@@ -1,0 +1,27 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "B",    # bugbear
+    "S",    # bandit
+    "UP",   # pyupgrade
+    "RET",  # return
+    "SIM",  # simplify
+    "PIE",  # misc
+    "ARG",  # unused args
+    "PL",   # pylint
+]
+ignore = [
+    "S101",   # assert used (ok in tests)
+    "S603",   # subprocess untrusted input (documented risk)
+    "PLR0913", # too many arguments
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "ARG001", "ARG002"]
