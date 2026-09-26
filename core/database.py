@@ -77,18 +77,22 @@ class Database:
     # ------------------------------------------------------------------
     @property
     def _connection(self) -> sqlite3.Connection:
-        """获取复用的数据库连接 (懒初始化, 线程安全通过 _lock 保护写入)"""
+        """获取复用的数据库连接 (懒初始化, 双重检查锁定保证线程安全)"""
         if self._db_conn is None:
-            self._db_conn = sqlite3.connect(
-                self.cfg.path, timeout=30, check_same_thread=False
-            )
-            self._db_conn.row_factory = sqlite3.Row
-            # 启用 WAL 模式, 提升并发读写性能并减少锁冲突
-            if getattr(self.cfg, "enable_wal", True):
-                try:
-                    self._db_conn.execute("PRAGMA journal_mode=WAL")
-                except sqlite3.DatabaseError as e:
-                    logger.warning("启用 WAL 模式失败: %s", e)
+            with _lock:
+                # 双重检查: 获取锁后再次确认是否仍需要初始化
+                if self._db_conn is None:
+                    conn = sqlite3.connect(
+                        self.cfg.path, timeout=30, check_same_thread=False
+                    )
+                    conn.row_factory = sqlite3.Row
+                    # 启用 WAL 模式, 提升并发读写性能并减少锁冲突
+                    if getattr(self.cfg, "enable_wal", True):
+                        try:
+                            conn.execute("PRAGMA journal_mode=WAL")
+                        except sqlite3.DatabaseError as e:
+                            logger.warning("启用 WAL 模式失败: %s", e)
+                    self._db_conn = conn
         return self._db_conn
 
     @contextmanager
