@@ -101,26 +101,28 @@ def compute_recommendations(
     if not products:
         return []
 
-    prices = [p.price for p in products if p.price > 0]
-    sales = [p.sales for p in products if p.sales >= 0]
-    ratings = [p.shop_rating for p in products if p.shop_rating >= 0]
+    # 筛选三个维度都有效的产品（避免不同子集导致统计偏差）
+    valid_products = [p for p in products if p.price > 0 and p.sales >= 0 and p.shop_rating >= 0]
+    prices = [p.price for p in valid_products]
+    sales = [p.sales for p in valid_products]
+    ratings = [p.shop_rating for p in valid_products]
 
     # 建立产品对象(id) -> 归一化值 的字典映射, 避免过滤后列表索引与原 products 不对应
     price_map: Dict[int, float] = {}
     if prices:
-        for p, nv in zip((p for p in products if p.price > 0),
+        for p, nv in zip(valid_products,
                          normalize(prices, invert=True)):
             price_map[id(p)] = nv
 
     sales_map: Dict[int, float] = {}
     if sales:
-        for p, nv in zip((p for p in products if p.sales >= 0),
+        for p, nv in zip(valid_products,
                          normalize(sales, invert=False)):
             sales_map[id(p)] = nv
 
     rating_map: Dict[int, float] = {}
     if ratings:
-        for p, nv in zip((p for p in products if p.shop_rating >= 0),
+        for p, nv in zip(valid_products,
                          normalize(ratings, invert=False)):
             rating_map[id(p)] = nv
 
