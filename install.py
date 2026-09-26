@@ -48,7 +48,7 @@ def install_dependencies() -> bool:
     if not req.exists():
         print("[FAIL] requirements.txt 不存在")
         return False
-    print(f"\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
+    print("\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
     # 选择性安装: playwright 较重, 单独提示
     rc = subprocess.call(
         [sys.executable, "-m", "pip", "install", "-r", str(req),
