@@ -195,8 +195,8 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
             min_price=min(prices),
             max_price=max(prices),
             median_price=round(median, 2),
-            avg_sales=int(sum(sales) / len(sales)) if sales else 0,
-            avg_rating=round(sum(ratings) / len(ratings), 2) if ratings else 0.0,
+            avg_sales=int(sum(sales) / len(sales)) if sales and len(sales) > 0 else 0,
+            avg_rating=round(sum(ratings) / len(ratings), 2) if ratings and len(ratings) > 0 else 0.0,
         ))
     return result
 
