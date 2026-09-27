@@ -334,7 +334,7 @@ pt_key=xxx; pt_pin=xxx; ...
 | 平台均价对比 | bar | 最低/均价/最高对比, 数值标注 |
 | 价格趋势 | line | 单商品近 N 天价格, 极值标注 |
 
-输出: PNG, 保存到 `exports/` 目录, 120 DPI。
+输出: PNG, 保存到 `exports/` 目录, 120 DPI。（首次导出时自动创建，无需手动建立）
 
 ### Web (ECharts 5.5, 前端 `web/templates/index.html`)
 
