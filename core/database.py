@@ -297,4 +297,20 @@ class Database:
         )
 
 
+
+    def close(self) -> None:
+        """关闭数据库连接。"""
+        if hasattr(self, "_connection") and self._connection is not None:
+            try:
+                self._connection.close()
+            except Exception:
+                pass
+            self._connection = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 __all__ = ["Database"]
