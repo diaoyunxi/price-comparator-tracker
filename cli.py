@@ -285,7 +285,20 @@ def cmd_trend(args: argparse.Namespace) -> int:
     """查询商品价格趋势"""
     db = Database()
     if not args.url_hash:
-        # 列出所有商品 url_hash 供选择
+        # 如果指定了 --keyword，列出该关键词下最近采集的商品及 url_hash
+        if args.keyword:
+            products = db.get_latest_by_keyword(args.keyword)
+            if not products:
+                print(f"关键词 '{args.keyword}' 无历史记录")
+                return 0
+            print(f"\n关键词 '{args.keyword}' 最近采集的商品:")
+            for p in products:
+                if p.url_hash:
+                    print(f"  {p.url_hash}  [{_platform_name(p.platform)}] "
+                          f"{p.title[:30]}  ¥{p.price:.2f}")
+            print(f"\n用法: python cli.py trend --url-hash <上面的哈希> --days {args.days}")
+            return 0
+        # 未指定 url_hash 也未指定 keyword，列出所有关键词
         rows = db.list_keywords()
         if not rows:
             print("数据库无历史记录")
@@ -294,6 +307,7 @@ def cmd_trend(args: argparse.Namespace) -> int:
         for kw, ts in rows[:10]:
             print(f"  {kw}  ({ts})")
         print("\n用法: python cli.py trend --keyword <关键词>")
+        print("  或: python cli.py trend --url-hash <商品哈希>")
         return 0
 
     trend = db.get_price_trend(args.url_hash, args.days)
