@@ -106,7 +106,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     print(f"\n[1/4] 关键词: {args.keyword}")
     print(f"[2/4] 平台: {', '.join(_platform_name(p) for p in platforms)} (共 {len(platforms)} 个)")
     print(f"[3/4] 每平台采集: {args.limit} 条, 模式: {'Mock' if args.mock else '真实(失败回退Mock)'}")
-    print(f"[4/4] 开始采集...\n")
+    print("[4/4] 开始采集...\n")
 
     result = run_crawl(
         keyword=args.keyword,
@@ -175,7 +175,7 @@ def cmd_search(args: argparse.Namespace) -> int:
     # 5. 价差信息
     # ------------------------------------------------------------------
     if result.cheapest and result.most_expensive:
-        print(f"\n价差分析:")
+        print("\n价差分析:")
         print(f"  最便宜: [{_platform_name(result.cheapest.platform)}] "
               f"{result.cheapest.title[:30]} ¥{result.cheapest.price:.2f}")
         print(f"  最贵:   [{_platform_name(result.most_expensive.platform)}] "

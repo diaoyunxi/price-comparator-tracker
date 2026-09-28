@@ -282,6 +282,25 @@ class Database:
     # 内部工具
     # ------------------------------------------------------------------
     @staticmethod
+
+    def __enter__(self) -> "Database":
+        """上下文管理器入口，支持 with 语句"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """上下文管理器出口，自动关闭数据库连接"""
+        self.close()
+
+    def close(self) -> None:
+        """关闭数据库连接，释放资源"""
+        if hasattr(self, "_conn") and self._conn is not None:
+            try:
+                self._conn.close()
+            except Exception:
+                pass
+            finally:
+                self._conn = None
+
     def _row_to_product(row: sqlite3.Row) -> Product:
         return Product(
             platform=row["platform"],
