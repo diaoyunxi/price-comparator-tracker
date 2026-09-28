@@ -15,7 +15,7 @@ import logging
 import sqlite3
 import threading
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -123,7 +123,7 @@ class Database:
         """
         if not products:
             return 0
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         date_str = now.strftime("%Y-%m-%d")
         rows = [
             (
@@ -164,7 +164,7 @@ class Database:
                        (keyword, platform, used_mock, error, elapsed, created_at)
                        VALUES (?,?,?,?,?,?)""",
                     (keyword, platform, int(used_mock), error, elapsed,
-                     datetime.now().isoformat(timespec="seconds")),
+                     datetime.now(timezone.utc).isoformat(timespec="seconds")),
                 )
 
     # ------------------------------------------------------------------
