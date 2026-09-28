@@ -131,8 +131,8 @@ class ProxyPool:
         """从文件加载代理列表, 返回加载数量"""
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
+                for raw_line in f:
+                    line = raw_line.strip()
                     if line and not line.startswith("#"):
                         self.proxies.append(line)
             logger.info("代理池加载 %d 个代理", len(self.proxies))
