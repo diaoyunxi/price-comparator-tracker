@@ -94,7 +94,7 @@ class Database:
     @contextmanager
     def _conn(self):
         """获取数据库连接 (上下文管理, 自动提交/回滚)"""
-        conn = self._connection
+        conn = self._connection()
         try:
             yield conn
             conn.commit()
