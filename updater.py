@@ -66,6 +66,10 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
         return None
 
     url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+    # 校验 URL scheme，防止 file:// 等非 HTTP 协议 (CWE-918, B310)
+    if not url.lower().startswith(("http://", "https://")):
+        logger.debug("拒绝非 HTTP(S) 协议 URL: %s", url)
+        return None
     req = urllib.request.Request(url, headers={
         "Accept": "application/vnd.github+json",
         "User-Agent": f"{repo}-updater/{read_version()}",
