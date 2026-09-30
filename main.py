@@ -180,7 +180,7 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         await tasks_store.update(
             task_id,
             status="failed", finished_at=time.time(),
-            error=str(e),
+            error="任务执行失败，请检查日志",
         )
 
 
