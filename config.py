@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import os
+import threading
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Dict, List
@@ -120,6 +121,7 @@ class AppConfig:
 
 
 # 单例
+_config_lock = threading.Lock()
 _config: AppConfig = AppConfig()
 
 
@@ -139,20 +141,21 @@ def load_local_config(path: str | None = None) -> AppConfig:
         更新后的 AppConfig 实例
     """
     global _config
-    cfg_path = Path(path) if path else PROJECT_ROOT / "config.local.yaml"
-    if not cfg_path.exists() or yaml is None:
-        return _config
+    with _config_lock:
+        cfg_path = Path(path) if path else PROJECT_ROOT / "config.local.yaml"
+        if not cfg_path.exists() or yaml is None:
+            return _config
 
-    raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
-    # 简单平铺覆盖 (不递归, 仅顶层 + 已知子项)
-    if "crawl" in raw and isinstance(raw["crawl"], dict):
-        for k, v in raw["crawl"].items():
-            if hasattr(_config.crawl, k):
-                setattr(_config.crawl, k, v)
-    if "db" in raw and isinstance(raw["db"], dict):
-        for k, v in raw["db"].items():
-            if hasattr(_config.db, k):
-                setattr(_config.db, k, v)
+        raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+        # 简单平铺覆盖 (不递归, 仅顶层 + 已知子项)
+        if "crawl" in raw and isinstance(raw["crawl"], dict):
+            for k, v in raw["crawl"].items():
+                if hasattr(_config.crawl, k):
+                    setattr(_config.crawl, k, v)
+        if "db" in raw and isinstance(raw["db"], dict):
+            for k, v in raw["db"].items():
+                if hasattr(_config.db, k):
+                    setattr(_config.db, k, v)
     if "web" in raw and isinstance(raw["web"], dict):
         for k, v in raw["web"].items():
             if hasattr(_config.web, k):
