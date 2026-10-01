@@ -11,7 +11,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 
 def _norm_title(s: str) -> str:
