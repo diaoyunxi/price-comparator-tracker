@@ -106,7 +106,7 @@ def chart_platform_price_box(products: List[Product],
     else:
         bp = ax.boxplot(data, labels=labels, **box_kwargs)
     colors = ["#FF6B6B", "#4ECDC4", "#FFD93D", "#A8DADC", "#F4A261"]
-    for patch, color in zip(bp["boxes"], colors[:len(bp["boxes"])]):
+    for patch, color in zip(bp["boxes"], colors[:len(bp["boxes"])], strict=False):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
 
@@ -145,7 +145,7 @@ def chart_price_distribution(products: List[Product],
     # 颜色渐变 (低价绿 -> 高价红)
     import matplotlib.cm as cm
     norm = plt.Normalize(min(prices), max(prices))
-    for patch, left in zip(patches, bins_arr[:-1]):
+    for patch, left in zip(patches, bins_arr[:-1], strict=False):
         patch.set_facecolor(cm.RdYlGn_r(norm(left)))
 
     ax.set_title("商品价格分布 (柱状图)", fontsize=14, fontweight="bold")
@@ -202,7 +202,7 @@ def chart_platform_avg(stats: List[PlatformStats],
     ax.grid(True, alpha=0.3, axis="y")
 
     # 数值标注
-    for i, (mn, av, mx) in enumerate(zip(min_prices, avg_prices, max_prices)):
+    for i, (mn, av, mx) in enumerate(zip(min_prices, avg_prices, max_prices, strict=False)):
         ax.text(i - width, mn, f"¥{mn:.0f}", ha="center", va="bottom", fontsize=9)
         ax.text(i, av, f"¥{av:.0f}", ha="center", va="bottom", fontsize=9)
         ax.text(i + width, mx, f"¥{mx:.0f}", ha="center", va="bottom", fontsize=9)
