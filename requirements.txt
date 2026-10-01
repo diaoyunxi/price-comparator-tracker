@@ -2,16 +2,23 @@
 # Python 3.8+
 
 # Web 框架
-fastapi==0.110.0
+# fastapi 提升至放开 starlette 版本上限的版本(>=0.134.0)，否则其 <0.37 的上限
+# 会与下方 starlette>=1.3.1 冲突导致依赖无法解析
+fastapi>=0.134.0
+# starlette 为 fastapi 的传递依赖，显式提升以修复安全漏洞
+# (PYSEC-2026-161/1941/1943/248/249/2280/2281，修复版本 >= 1.3.1)
+starlette>=1.3.1
 uvicorn[standard]==0.29.0
 jinja2==3.1.3
 python-multipart==0.0.9
 
 # HTTP 爬虫
 requests==2.31.0
-urllib3==2.2.1
+# 安全修复：PYSEC-2026-141/1994/1995/1996/1997/1998/1999、CVE-2026-97687、CVE-2026-97689
+urllib3>=2.8.0
 beautifulsoup4==4.12.3
-lxml==5.1.0
+# 安全修复：PYSEC-2026-87
+lxml>=6.1.0
 
 # 反爬: 浏览器自动化 (可选, requests 失败时启用)
 # playwright==1.42.0  # 安装后需执行 playwright install chromium
