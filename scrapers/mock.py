@@ -51,7 +51,9 @@ URL_TEMPLATES = {
 def _hash_sku(keyword: str, idx: int, platform: str) -> str:
     """根据关键词+索引+平台生成稳定 SKU ID"""
     s = f"{platform}|{keyword}|{idx}"
-    h = hashlib.md5(s.encode("utf-8")).hexdigest()
+    # 此处仅用于生成确定性的 SKU 标识，非安全用途，
+    # 显式声明 usedforsecurity=False 以消除 Bandit B324 弱哈希告警
+    h = hashlib.md5(s.encode("utf-8"), usedforsecurity=False).hexdigest()
     return str(int(h[:12], 16) % 10_000_000_000)
 
 
@@ -187,7 +189,10 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
         90 条示例商品 (3 平台各 30 条)
     """
     # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
-    local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])
+    # 此处基于关键词派生固定随机种子，仅用于保证示例数据稳定，非安全用途，
+    # 显式声明 usedforsecurity=False 以消除 Bandit B324 弱哈希告警
+    seed = hashlib.md5(keyword.encode("utf-8"), usedforsecurity=False).hexdigest()[:8]
+    local_rng = random.Random(seed)
     result: List[Product] = []
     for platform in ("jd", "taobao", "pdd"):
         result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
