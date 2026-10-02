@@ -143,16 +143,24 @@ class Database:
             )
             for p in products
         ]
+        # SQLite 默认 SQLITE_MAX_VARIABLE_NUMBER=999，每行 13 个绑定变量，
+        # 安全批次上限为 999//13=76 行；超出时分批 executemany 防止
+        # "too many SQL variables" 错误
+        BATCH_SIZE = 76
+        total = 0
         with self._conn() as conn:
             with _lock:
-                conn.executemany(
-                    """INSERT INTO products
-                       (keyword, platform, title, price, sales, shop, shop_rating,
-                        url, url_hash, image_url, sku_id, fetched_at, fetched_date)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                    rows,
-                )
-        return len(rows)
+                for i in range(0, len(rows), BATCH_SIZE):
+                    batch = rows[i:i + BATCH_SIZE]
+                    conn.executemany(
+                        """INSERT INTO products
+                           (keyword, platform, title, price, sales, shop, shop_rating,
+                            url, url_hash, image_url, sku_id, fetched_at, fetched_date)
+                           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        batch,
+                    )
+                    total += len(batch)
+        return total
 
     def save_meta(self, keyword: str, platform: str, used_mock: bool,
                   error: str, elapsed: float) -> None:
