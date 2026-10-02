@@ -70,38 +70,70 @@ db = Database()
 
 
 # ---------------------------------------------------------------------------
-# 任务管理 (内存中, 进程级)
+# 任务管理 (内存 + 磁盘持久化)
 # ---------------------------------------------------------------------------
-class TaskStore:
-    """简单内存任务存储 (生产环境应换 Redis)"""
+_TASKS_FILE = PROJECT_ROOT / "data" / "tasks.json"
 
-    def __init__(self) -> None:
+
+class TaskStore:
+    """任务存储：内存字典 + JSON 文件持久化，进程重启后任务状态不丢失"""
+
+    def __init__(self, persist_path: Path = _TASKS_FILE) -> None:
         self.tasks: Dict[str, dict] = {}
         self._lock = asyncio.Lock()
+        self._persist_path = persist_path
         # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
         self._bg_tasks: Dict[str, asyncio.Task] = {}
+        # 启动时从磁盘恢复
+        self._load_from_disk()
+
+    def _load_from_disk(self) -> None:
+        """从 JSON 文件加载历史任务状态"""
+        try:
+            if self._persist_path.exists():
+                with open(self._persist_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    self.tasks = data
+        except (json.JSONDecodeError, OSError):
+            self.tasks = {}
+
+    async def _save_to_disk(self) -> None:
+        """将任务状态原子写入 JSON 文件（临时文件 + rename）"""
+        try:
+            self._persist_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = self._persist_path.with_suffix(".tmp")
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(self.tasks, f, ensure_ascii=False, default=str)
+            tmp_path.replace(self._persist_path)
+        except OSError:
+            pass
 
     async def create(self, keyword: str, platforms: list, limit: int,
                      use_mock: bool) -> str:
         task_id = uuid.uuid4().hex[:12]
-        self.tasks[task_id] = {
-            "task_id": task_id,
-            "keyword": keyword,
-            "platforms": platforms,
-            "limit": limit,
-            "use_mock": use_mock,
-            "status": "pending",  # pending/running/success/failed
-            "progress": 0,
-            "started_at": time.time(),
-            "finished_at": None,
-            "error": None,
-            "result": None,
-        }
+        async with self._lock:
+            self.tasks[task_id] = {
+                "task_id": task_id,
+                "keyword": keyword,
+                "platforms": platforms,
+                "limit": limit,
+                "use_mock": use_mock,
+                "status": "pending",  # pending/running/success/failed
+                "progress": 0,
+                "started_at": time.time(),
+                "finished_at": None,
+                "error": None,
+                "result": None,
+            }
+            await self._save_to_disk()
         return task_id
 
     async def update(self, task_id: str, **fields) -> None:
-        if task_id in self.tasks:
-            self.tasks[task_id].update(fields)
+        async with self._lock:
+            if task_id in self.tasks:
+                self.tasks[task_id].update(fields)
+                await self._save_to_disk()
 
     def get(self, task_id: str) -> Optional[dict]:
         return self.tasks.get(task_id)
