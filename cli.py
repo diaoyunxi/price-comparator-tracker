@@ -212,10 +212,20 @@ def cmd_search(args: argparse.Namespace) -> int:
     if args.chart:
         _generate_charts(result, db, args.trend_days)
     if args.save_json:
+        import tempfile
         out = EXPORT_DIR / f"result_{args.keyword}_{int(time.time())}.json"
-        out.write_text(json.dumps(result.to_dict(), ensure_ascii=False, indent=2),
-                      encoding="utf-8")
-        print(f"\n结果 JSON 已保存: {out}")
+        fd, tmp_path = tempfile.mkstemp(dir=EXPORT_DIR, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+            os.replace(tmp_path, out)
+            print(f"\n结果 JSON 已保存: {out}")
+        except Exception:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
 
     print(f"\n总耗时: {result.elapsed:.2f}s")
     return 0
@@ -238,10 +248,20 @@ def _export(result, fmt: str) -> None:
                 writer.writerow(r)
         print(f"CSV 已导出: {out}")
     elif fmt == "json":
+        import tempfile
         out = EXPORT_DIR / f"products_{result.keyword}_{int(time.time())}.json"
-        out.write_text(json.dumps(result.to_dict(), ensure_ascii=False, indent=2),
-                      encoding="utf-8")
-        print(f"JSON 已导出: {out}")
+        fd, tmp_path = tempfile.mkstemp(dir=EXPORT_DIR, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+            os.replace(tmp_path, out)
+            print(f"JSON 已导出: {out}")
+        except Exception:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
 
 
 def _generate_charts(result, db, trend_days: int) -> None:
