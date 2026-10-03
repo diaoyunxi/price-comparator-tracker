@@ -76,6 +76,17 @@ class Database:
     # 连接管理
     # ------------------------------------------------------------------
     @property
+
+    def __enter__(self):
+        """支持 with 语句自动管理数据库连接生命周期"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """退出 with 块时自动关闭数据库连接"""
+        self.close()
+        return False
+
+
     def _connection(self) -> sqlite3.Connection:
         """获取复用的数据库连接 (懒初始化, 线程安全通过 _lock 保护写入)"""
         if self._db_conn is None:
