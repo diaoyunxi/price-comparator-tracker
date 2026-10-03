@@ -52,3 +52,6 @@ Thumbs.db
 config.local.yaml
 cookies/*.txt
 proxy_pool.txt
+
+# Environment variables file (contains secrets)
+.env
