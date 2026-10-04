@@ -81,6 +81,11 @@ class JDScraper(BaseScraper):
         标题: <div class="search_p_title"><a>...</a></div>
         链接: <a href="//item.m.jd.com/product/12345.html">
         """
+        # 空页面/反爬拦截快速返回，避免无效解析 (CWE-682)
+        if not html or len(html.strip()) < 200:
+            logger.debug("[%s] 页面内容过短 (%d bytes)，可能为空结果或被反爬拦截", self.platform, len(html or ""))
+            return []
+
         products: List[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
@@ -149,6 +154,11 @@ class JDScraper(BaseScraper):
 
         京东 PC 页中商品数据常嵌入 <script> 中的 glb/jsonp 变量
         """
+        # 空页面/反爬拦截快速返回，避免无效解析 (CWE-682)
+        if not html or len(html.strip()) < 200:
+            logger.debug("[%s] 页面内容过短 (%d bytes)，可能为空结果或被反爬拦截", self.platform, len(html or ""))
+            return []
+
         products: List[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
