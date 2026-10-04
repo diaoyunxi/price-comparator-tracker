@@ -227,8 +227,11 @@ async def api_sample():
             logger.warning("自动生成示例失败: %s", e)
             return JSONResponse({"error": f"sample_not_ready: {e}"}, status_code=500)
 
-    result = json.loads(SAMPLE_RESULT.read_text(encoding="utf-8"))
-    raw = json.loads(SAMPLE_PRODUCTS.read_text(encoding="utf-8"))
+    try:
+        result = json.loads(SAMPLE_RESULT.read_text(encoding="utf-8"))
+        raw = json.loads(SAMPLE_PRODUCTS.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, FileNotFoundError, OSError) as e:
+        return JSONResponse({"error": f"sample_not_ready: {e}"}, status_code=500)
     return {
         "raw": {
             "keyword": raw["keyword"],
