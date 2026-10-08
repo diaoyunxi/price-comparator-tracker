@@ -50,10 +50,15 @@ def install_dependencies() -> bool:
         return False
     print(f"\n[INSTALL] 安装依赖 (pip install -r requirements.txt)...")
     # 选择性安装: playwright 较重, 单独提示
-    rc = subprocess.call(
-        [sys.executable, "-m", "pip", "install", "-r", str(req),
-         "--disable-pip-version-check", "--quiet"],
-    )
+    try:
+        rc = subprocess.call(
+            [sys.executable, "-m", "pip", "install", "-r", str(req),
+             "--disable-pip-version-check", "--quiet"],
+            timeout=300,
+        )
+    except subprocess.TimeoutExpired:
+        print("[FAIL] pip install 超时 (300s), 请检查网络连接后重试")
+        return False
     if rc != 0:
         print("[WARN] 依赖安装可能不完整, 部分功能可能不可用")
         return False
@@ -74,7 +79,11 @@ def generate_sample() -> None:
     if not gen.exists():
         print("[WARN] tools/gen_sample.py 不存在, 跳过示例数据生成")
         return
-    rc = subprocess.call([sys.executable, str(gen)], cwd=str(PROJECT_ROOT))
+    try:
+        rc = subprocess.call([sys.executable, str(gen)], cwd=str(PROJECT_ROOT), timeout=60)
+    except subprocess.TimeoutExpired:
+        print("[WARN] 示例数据生成超时 (60s), 已跳过")
+        return
     if rc == 0:
         print("[OK] 示例数据已生成")
     else:
