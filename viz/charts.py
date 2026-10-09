@@ -154,7 +154,7 @@ def chart_price_distribution(products: List[Product],
     ax.grid(True, alpha=0.3, axis="y")
 
     # 标注统计信息
-    avg = sum(prices) / len(prices)
+    avg = sum(prices) / len(prices) if prices else 0.0
     ax.axvline(avg, color="red", linestyle="--", linewidth=2, label=f"均价 ¥{avg:.2f}")
     ax.legend()
 
