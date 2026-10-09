@@ -51,7 +51,7 @@ URL_TEMPLATES = {
 def _hash_sku(keyword: str, idx: int, platform: str) -> str:
     """根据关键词+索引+平台生成稳定 SKU ID"""
     s = f"{platform}|{keyword}|{idx}"
-    h = hashlib.md5(s.encode("utf-8")).hexdigest()
+    h = hashlib.md5(s.encode("utf-8"), usedforsecurity=False).hexdigest()  # S324: 仅用于生成稳定 SKU ID，非密码学用途
     return str(int(h[:12], 16) % 10_000_000_000)
 
 
