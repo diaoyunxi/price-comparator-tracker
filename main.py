@@ -180,7 +180,7 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         await tasks_store.update(
             task_id,
             status="failed", finished_at=time.time(),
-            error=str(e),
+            error=f"task_failed:{type(e).__name__}",
         )
 
 
@@ -225,7 +225,7 @@ async def api_sample():
             )
         except Exception as e:
             logger.warning("自动生成示例失败: %s", e)
-            return JSONResponse({"error": f"sample_not_ready: {e}"}, status_code=500)
+            return JSONResponse({"error": "sample_not_ready: 示例数据生成失败，请稍后重试"}, status_code=500)
 
     result = json.loads(SAMPLE_RESULT.read_text(encoding="utf-8"))
     raw = json.loads(SAMPLE_PRODUCTS.read_text(encoding="utf-8"))
