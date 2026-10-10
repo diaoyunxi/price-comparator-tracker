@@ -133,7 +133,7 @@ def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
         print(f"  下载地址: {release.get('html_url')}")
         assets = release.get("assets") or []
         if assets:
-            print(f"  可下载文件:")
+            print("  可下载文件:")
             for a in assets[:5]:
                 print(f"    - {a.get('name')}  ({a.get('size', 0) // 1024} KB)")
                 print(f"      {a.get('browser_download_url')}")
