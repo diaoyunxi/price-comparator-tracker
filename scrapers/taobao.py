@@ -225,9 +225,8 @@ def _find_first_item_list(data, keys, depth=0):
         return []
     if isinstance(data, dict):
         for k in keys:
-            if k in data and isinstance(data[k], list) and data[k]:
-                if isinstance(data[k][0], dict):
-                    return data[k]
+            if k in data and isinstance(data[k], list) and data[k] and isinstance(data[k][0], dict):
+                return data[k]
         for v in data.values():
             r = _find_first_item_list(v, keys, depth + 1)
             if r:
