@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 FastAPI Web 应用入口
 
