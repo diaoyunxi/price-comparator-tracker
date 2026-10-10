@@ -141,6 +141,12 @@ def run_crawl(keyword: str,
             db.save_products(keyword, cleaned)
             for r in raw_results:
                 db.save_meta(keyword, r.platform, r.used_mock, r.error, r.elapsed)
+            # 自动清理超期数据，防止数据库无限增长
+            if cfg.db.retention_days > 0:
+                deleted = db.cleanup_old(cfg.db.retention_days)
+                if deleted:
+                    logger.info("数据清理: 删除 %d 条超过 %d 天的历史记录",
+                                deleted, cfg.db.retention_days)
         except Exception as e:
             logger.error("入库失败: %s", e)
 
