@@ -75,6 +75,21 @@ class Database:
     # ------------------------------------------------------------------
     # 连接管理
     # ------------------------------------------------------------------
+
+    def __enter__(self):
+        """上下文管理器入口"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """上下文管理器出口，确保连接关闭"""
+        self.close()
+
+    def close(self):
+        """关闭数据库连接"""
+        if hasattr(self, '_connection') and self._connection:
+            self._connection.close()
+            self._connection = None
+
     @property
     def _connection(self) -> sqlite3.Connection:
         """获取复用的数据库连接 (懒初始化, 线程安全通过 _lock 保护写入)"""
