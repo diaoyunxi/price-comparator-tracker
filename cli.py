@@ -51,6 +51,18 @@ from core.runner import run_crawl
 # ---------------------------------------------------------------------------
 # 日志配置
 # ---------------------------------------------------------------------------
+
+# 显示相关常量
+TITLE_TRUNCATE_LENGTH_LIST = 35  # 列表视图中标题截断长度
+TITLE_TRUNCATE_LENGTH_RECOMMEND = 30  # 推荐视图中标题截断长度
+MAX_DISPLAY_ROWS = 100  # 最大显示行数
+DEFAULT_DISPLAY_WIDTH = 128  # 默认显示宽度
+HTTP_OK = 200  # HTTP 成功状态码
+HTTP_SERVER_ERROR = 500  # HTTP 服务器错误状态码
+DISPLAY_WIDTH_NARROW = 400  # 窄屏显示宽度
+DISPLAY_WIDTH_MEDIUM = 600  # 中屏显示宽度
+MAX_ITEMS_PER_PAGE = 5  # 每页最大项目数
+
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
@@ -145,7 +157,7 @@ def cmd_search(args: argparse.Namespace) -> int:
         for p in result.products[:show_n]:
             rows.append([
                 _platform_name(p.platform),
-                p.title[:35] + ("..." if len(p.title) > 35 else ""),
+                p.title[:TITLE_TRUNCATE_LENGTH_LIST] + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_LIST else ""),
                 f"¥{p.price:.2f}" if p.price > 0 else "N/A",
                 f"{p.sales:,}" if p.sales >= 0 else "N/A",
                 p.shop[:18],
@@ -192,7 +204,7 @@ def cmd_search(args: argparse.Namespace) -> int:
             rows.append([
                 f"#{rec.rank}",
                 _platform_name(p.platform),
-                p.title[:30] + ("..." if len(p.title) > 30 else ""),
+                p.title[:TITLE_TRUNCATE_LENGTH_RECOMMEND] + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_RECOMMEND else ""),
                 f"¥{p.price:.2f}" if p.price > 0 else "N/A",
                 f"{p.sales:,}" if p.sales >= 0 else "N/A",
                 f"{rec.score:.1f}",
