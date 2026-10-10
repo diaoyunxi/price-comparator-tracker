@@ -216,7 +216,7 @@ class JDScraper(BaseScraper):
                 ))
                 if len(products) >= limit:
                     break
-            except Exception:
+            except Exception:  # noqa: S112 - individual product parse failure is non-fatal
                 continue
         return products
 
