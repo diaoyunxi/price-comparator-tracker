@@ -52,3 +52,7 @@ Thumbs.db
 config.local.yaml
 cookies/*.txt
 proxy_pool.txt
+
+# Keep .gitkeep tracked, ignore export files
+exports/*
+!exports/.gitkeep
