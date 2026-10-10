@@ -282,8 +282,8 @@ def _save_or_show(fig, save_path: Optional[str], prefix: str) -> str:
 
 
 __all__ = [
+    "chart_platform_avg",
     "chart_platform_price_box",
     "chart_price_distribution",
-    "chart_platform_avg",
     "chart_price_trend",
 ]
