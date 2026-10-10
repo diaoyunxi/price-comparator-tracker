@@ -18,6 +18,10 @@ from __future__ import annotations
 
 import hashlib
 import random
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.models import CrawlResult
 from typing import List
 
 from core.models import Product
