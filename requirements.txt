@@ -23,7 +23,7 @@ pandas==2.2.1
 matplotlib==3.8.3
 
 # 命令行
-rich==13.7.1
+rich==15.0.0
 
 # 工具
 python-dateutil==2.9.0
