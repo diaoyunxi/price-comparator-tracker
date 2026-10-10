@@ -27,4 +27,4 @@ rich==13.7.1
 
 # 工具
 python-dateutil==2.9.0.post0
-fake-useragent==1.5.1
+fake-useragent==2.2.0
