@@ -78,7 +78,7 @@ def _render_table(headers: List[str], rows: List[List[str]], title: str = "") ->
         console.print(table)
         return
     except ImportError:
-        pass
+        pass  # TODO: add proper error handling
 
     # 退化: 简单对齐
     print(f"\n== {title} ==")
