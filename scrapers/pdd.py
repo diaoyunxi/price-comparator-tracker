@@ -92,7 +92,7 @@ class PddScraper(BaseScraper):
         items = soup.select("div[data-goods-id], div.goods-item, li.item, div.r-search-item")
         if not items:
             items = soup.find_all(["div", "li"],
-                                 class_=re.compile(r"(goods|item|product|search)", re.I))
+                                 class_=re.compile(r"(goods|item|product|search)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -146,7 +146,7 @@ class PddScraper(BaseScraper):
         products: List[Product] = []
         # 拼多多常把数据放在 window.__INITIAL_STATE__ 中
         m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*;?\s*</script>",
-                     html, re.S)
+                     html, re.DOTALL)
         if m:
             try:
                 data = json.loads(m.group(1))

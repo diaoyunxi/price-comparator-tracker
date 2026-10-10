@@ -88,7 +88,7 @@ class TaobaoScraper(BaseScraper):
         items = soup.select("div.item, li.item, div.product, div.Card, div[data-spm]")
         if not items:
             items = soup.find_all(["div", "li"],
-                                 class_=re.compile(r"(item|product|goods|card)", re.I))
+                                 class_=re.compile(r"(item|product|goods|card)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -152,7 +152,7 @@ class TaobaoScraper(BaseScraper):
         """
         products: List[Product] = []
         # 模式 1: g_page_config
-        m = re.search(r"g_page_config\s*=\s*(\{.*?\})\s*[;<\n]", html, re.S)
+        m = re.search(r"g_page_config\s*=\s*(\{.*?\})\s*[;<\n]", html, re.DOTALL)
         if m:
             try:
                 data = json.loads(m.group(1))
@@ -177,7 +177,7 @@ class TaobaoScraper(BaseScraper):
                 logger.debug("[%s] g_page_config 解析失败: %s", self.platform, e)
 
         # 模式 2: __INITIAL_STATE__
-        m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\});", html, re.S)
+        m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\});", html, re.DOTALL)
         if m:
             try:
                 data = json.loads(m.group(1))
