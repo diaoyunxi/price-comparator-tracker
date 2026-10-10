@@ -1,3 +1,4 @@
+import math
 """
 数据清洗与去重模块
 
@@ -168,7 +169,7 @@ def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
         if not p.title:
             stats["empty_title"] += 1
             continue
-        if p.price <= 0:
+        if p.price <= 0 or math.isnan(p.price):
             stats["invalid_price"] += 1
             # 不直接丢弃, 但排在末尾
         cleaned.append(p)
