@@ -20,7 +20,7 @@ lxml==5.1.0
 pandas==2.2.1
 
 # 可视化 (CLI 图表)
-matplotlib==3.8.3
+matplotlib==3.11.2
 
 # 命令行
 rich==13.7.1
