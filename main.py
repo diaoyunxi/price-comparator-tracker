@@ -75,6 +75,9 @@ db = Database()
 class TaskStore:
     """简单内存任务存储 (生产环境应换 Redis)"""
 
+    # 已完成任务保留时长（秒），超过后自动清理防止内存无限增长
+    TASK_RETENTION_SECONDS: int = 3600  # 1 小时
+
     def __init__(self) -> None:
         self.tasks: Dict[str, dict] = {}
         self._lock = asyncio.Lock()
@@ -106,8 +109,36 @@ class TaskStore:
     def get(self, task_id: str) -> Optional[dict]:
         return self.tasks.get(task_id)
 
+    async def cleanup(self) -> int:
+        """清理已完成且超过保留期的任务，返回清理数量"""
+        now = time.time()
+        expired_ids = []
+        async with self._lock:
+            for tid, task in self.tasks.items():
+                if task["status"] in ("success", "failed") and task["finished_at"]:
+                    if now - task["finished_at"] > self.TASK_RETENTION_SECONDS:
+                        expired_ids.append(tid)
+            for tid in expired_ids:
+                del self.tasks[tid]
+                self._bg_tasks.pop(tid, None)
+        return len(expired_ids)
+
 
 tasks_store = TaskStore()
+
+
+async def _periodic_cleanup() -> None:
+    """定期清理已完成任务，防止内存无限增长"""
+    while True:
+        await asyncio.sleep(600)  # 每 10 分钟执行一次
+        count = await tasks_store.cleanup()
+        if count:
+            logger.debug("已清理 %d 个过期任务", count)
+
+
+@app.on_event("startup")
+async def _start_cleanup() -> None:
+    asyncio.create_task(_periodic_cleanup())
 
 
 # ---------------------------------------------------------------------------
