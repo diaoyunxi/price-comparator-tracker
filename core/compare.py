@@ -191,9 +191,9 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
         result.append(PlatformStats(
             platform=platform_names.get(plat, plat),
             count=len(prices),  # 只统计有效价格商品数量
-            avg_price=round(sum(prices) / len(prices), 2),
-            min_price=min(prices),
-            max_price=max(prices),
+            avg_price=round(sum(prices) / len(prices), 2) if prices else 0.0,
+            min_price=min(prices) if prices else 0.0,
+            max_price=max(prices) if prices else 0.0,
             median_price=round(median, 2),
             avg_sales=int(sum(sales) / len(sales)) if sales else 0,
             avg_rating=round(sum(ratings) / len(ratings), 2) if ratings else 0.0,
