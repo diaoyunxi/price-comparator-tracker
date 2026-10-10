@@ -17,7 +17,7 @@ lxml==5.1.0
 # playwright==1.42.0  # 安装后需执行 playwright install chromium
 
 # 数据处理
-pandas==2.2.1
+pandas==3.0.6
 
 # 可视化 (CLI 图表)
 matplotlib==3.8.3
