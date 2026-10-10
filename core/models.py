@@ -56,8 +56,12 @@ class Product:
     # ------------------------------------------------------------------
     @property
     def dedup_key(self) -> str:
-        """去重 key: 平台+标题归一化+价格档位"""
-        price_bucket = int(self.price) if self.price > 0 else 0
+        """去重 key: 平台+标题归一化+价格档位
+
+        无效价格 (<=0) 使用独立标记 'NA' 而非统一的 0，
+        防止不同商品因价格解析失败而错误地去重。
+        """
+        price_bucket = int(self.price) if self.price > 0 else "NA"
         return f"{self.platform}|{_norm_title(self.title)[:80]}|{price_bucket}"
 
     @property
