@@ -23,7 +23,7 @@ import random
 import time
 import logging
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional
 
 import requests
 from requests.adapters import HTTPAdapter
