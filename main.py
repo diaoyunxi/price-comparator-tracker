@@ -137,9 +137,14 @@ async def _periodic_cleanup() -> None:
             logger.debug("已清理 %d 个过期任务", count)
 
 
+_background_tasks: set[asyncio.Task] = set()
+
+
 @app.on_event("startup")
 async def _start_cleanup() -> None:
-    asyncio.create_task(_periodic_cleanup())
+    task = asyncio.create_task(_periodic_cleanup())
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
 
 
 # ---------------------------------------------------------------------------
