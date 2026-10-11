@@ -61,34 +61,34 @@ def _hash_sku(keyword: str, idx: int, platform: str) -> str:
 
 def _gen_title(keyword: str) -> str:
     """生成标题: 关键词 + 品牌 + 规格 + 后缀"""
-    brand = random.choice(BRANDS)
-    spec = random.choice(SPECS)
-    suffix = random.choice(SUFFIXES)
+    brand = random.choice(BRANDS)  # noqa: S311 — 模拟数据生成
+    spec = random.choice(SPECS)  # noqa: S311
+    suffix = random.choice(SUFFIXES)  # noqa: S311
     return f"{brand} {keyword} {spec} {suffix}"
 
 
 def _gen_price(base: float) -> float:
     """基准价 * (0.5 ~ 2.0) + 微抖动"""
-    factor = random.uniform(0.5, 2.0)
-    noise = random.uniform(-5, 5)
+    factor = random.uniform(0.5, 2.0)  # noqa: S311
+    noise = random.uniform(-5, 5)  # noqa: S311
     price = base * factor + noise
     return round(max(price, 9.9), 2)
 
 
 def _gen_sales() -> int:
     """对数分布销量: 5% 爆款 (1w+), 30% 中等 (1k-1w), 65% 普通 (<1k)"""
-    r = random.random()
+    r = random.random()  # noqa: S311
     if r < 0.05:
-        return random.randint(10_000, 50_000)
+        return random.randint(10_000, 50_000)  # noqa: S311
     elif r < 0.35:
-        return random.randint(1_000, 10_000)
+        return random.randint(1_000, 10_000)  # noqa: S311
     else:
-        return random.randint(10, 1_000)
+        return random.randint(10, 1_000)  # noqa: S311
 
 
 def _gen_shop() -> str:
     """生成店铺名"""
-    brand = random.choice(BRANDS)
+    brand = random.choice(BRANDS)  # noqa: S311 — 模拟数据生成
     shop_type = random.choice(SHOP_PREFIXES)
     return f"{brand}{shop_type}"
 
