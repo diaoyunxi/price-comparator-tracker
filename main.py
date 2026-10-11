@@ -261,7 +261,7 @@ async def api_sample():
             except asyncio.TimeoutError:
                 proc.kill()
                 await proc.wait()
-                raise TimeoutError("gen_sample.py 执行超时 (30s)")
+                raise TimeoutError("gen_sample.py 执行超时 (30s)") from None
             if proc.returncode != 0:
                 err_msg = stderr.decode(errors="ignore").strip()
                 raise RuntimeError(
