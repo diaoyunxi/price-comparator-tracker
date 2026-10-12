@@ -116,7 +116,7 @@ def run_crawl(keyword: str,
                 try:
                     raw_results.append(fut.result())
                 except Exception as e:
-                    logger.error("[%s] 采集失败: %s", plat, e)
+                    logger.exception("[%s] 采集失败: %s", plat, e)
                     # 采集异常时并未真正使用 Mock 数据, used_mock 置为 False
                     raw_results.append(CrawlResult(
                         keyword=keyword, platform=plat, error=f"crawl_failed:{type(e).__name__}",
@@ -148,7 +148,7 @@ def run_crawl(keyword: str,
                     logger.info("数据清理: 删除 %d 条超过 %d 天的历史记录",
                                 deleted, cfg.db.retention_days)
         except Exception as e:
-            logger.error("入库失败: %s", e)
+            logger.exception("入库失败: %s", e)
 
     # 5. 平台对比统计
     plat_stats = platform_stats(cleaned, cfg.platforms)
@@ -187,7 +187,7 @@ def _crawl_one(kw: str, plat: str, limit: int) -> CrawlResult:
         scraper = get_scraper(plat)
         return scraper.search(kw, limit)
     except Exception as e:
-        logger.error("[%s] 爬虫实例化失败: %s", plat, e)
+        logger.exception("[%s] 爬虫实例化失败: %s", plat, e)
         # 异常时未使用 Mock 数据, used_mock 置为 False
         return CrawlResult(keyword=kw, platform=plat, error=f"crawl_failed:{type(e).__name__}", used_mock=False)
 
