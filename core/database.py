@@ -163,32 +163,30 @@ class Database:
         # "too many SQL variables" 错误
         BATCH_SIZE = 76
         total = 0
-        with self._conn() as conn:
-            with _lock:
-                for i in range(0, len(rows), BATCH_SIZE):
-                    batch = rows[i:i + BATCH_SIZE]
-                    conn.executemany(
-                        """INSERT INTO products
-                           (keyword, platform, title, price, sales, shop, shop_rating,
-                            url, url_hash, image_url, sku_id, fetched_at, fetched_date)
-                           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                        batch,
-                    )
-                    total += len(batch)
+        with self._conn() as conn, _lock:
+            for i in range(0, len(rows), BATCH_SIZE):
+                batch = rows[i:i + BATCH_SIZE]
+                conn.executemany(
+                    """INSERT INTO products
+                       (keyword, platform, title, price, sales, shop, shop_rating,
+                        url, url_hash, image_url, sku_id, fetched_at, fetched_date)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    batch,
+                )
+                total += len(batch)
         return total
 
     def save_meta(self, keyword: str, platform: str, used_mock: bool,
                   error: str, elapsed: float) -> None:
         """记录采集任务元信息"""
-        with self._conn() as conn:
-            with _lock:
-                conn.execute(
-                    """INSERT INTO crawl_meta
-                       (keyword, platform, used_mock, error, elapsed, created_at)
-                       VALUES (?,?,?,?,?,?)""",
-                    (keyword, platform, int(used_mock), error, elapsed,
-                     datetime.now(timezone.utc).isoformat(timespec="seconds")),
-                )
+        with self._conn() as conn, _lock:
+            conn.execute(
+                """INSERT INTO crawl_meta
+                   (keyword, platform, used_mock, error, elapsed, created_at)
+                   VALUES (?,?,?,?,?,?)""",
+                (keyword, platform, int(used_mock), error, elapsed,
+                 datetime.now(timezone.utc).isoformat(timespec="seconds")),
+            )
 
     # ------------------------------------------------------------------
     # 查询
@@ -294,12 +292,11 @@ class Database:
         if retention_days <= 0:
             return 0
         cutoff = (datetime.now(timezone.utc) - timedelta(days=retention_days)).strftime("%Y-%m-%d")
-        with self._conn() as conn:
-            with _lock:
-                cur = conn.execute(
-                    "DELETE FROM products WHERE fetched_date < ?", (cutoff,)
-                )
-                return cur.rowcount
+        with self._conn() as conn, _lock:
+            cur = conn.execute(
+                "DELETE FROM products WHERE fetched_date < ?", (cutoff,)
+            )
+            return cur.rowcount
 
     # ------------------------------------------------------------------
     # 内部工具
