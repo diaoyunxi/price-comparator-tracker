@@ -99,8 +99,8 @@ def chart_platform_price_box(products: List[Product],
     import matplotlib as _mpl
     _mpl_ver = tuple(int(x) for x in _mpl.__version__.split(".")[:2])
     box_kwargs = {"patch_artist": True, "showmeans": True,
-                      meanprops={"marker": "D", "markerfacecolor": "red",
-                                 "markeredgecolor": "red", "markersize": 6})
+                  "meanprops": {"marker": "D", "markerfacecolor": "red",
+                                "markeredgecolor": "red", "markersize": 6}}
     if _mpl_ver >= (3, 9):
         bp = ax.boxplot(data, tick_labels=labels, **box_kwargs)
     else:
