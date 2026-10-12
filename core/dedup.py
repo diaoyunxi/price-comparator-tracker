@@ -1,4 +1,3 @@
-import math
 """
 数据清洗与去重模块
 
@@ -11,6 +10,7 @@ import math
 
 from __future__ import annotations
 
+import math
 import re
 from typing import List, Tuple
 
