@@ -109,28 +109,31 @@ def verify_imports() -> bool:
     """验证关键模块可导入"""
     print("\n[VERIFY] 验证模块导入...")
     try:
-        from core.models import Product
-        from core.database import Database
-        from core.dedup import clean_products
-        from core.compare import compute_recommendations
-        from core.runner import run_crawl
-        from scrapers import get_scraper
+        from core.models import Product  # noqa: F401
+        from core.database import Database  # noqa: F401
+        from core.dedup import clean_products  # noqa: F401
+        from core.compare import compute_recommendations  # noqa: F401
+        from core.runner import run_crawl  # noqa: F401
+        from scrapers import get_scraper  # noqa: F401
         print("[OK] 核心模块导入成功")
     except Exception as e:
         print(f"[FAIL] 核心模块导入失败: {e}")
         return False
     try:
-        import fastapi, uvicorn, requests, bs4
+        import fastapi  # noqa: F401
+        import uvicorn  # noqa: F401
+        import requests  # noqa: F401
+        import bs4  # noqa: F401
         print("[OK] Web/爬虫依赖导入成功")
     except Exception as e:
         print(f"[WARN] 部分依赖缺失: {e}")
     try:
-        import matplotlib
+        import matplotlib  # noqa: F401
         print("[OK] matplotlib 可用 (CLI 图表功能就绪)")
     except Exception:
         print("[WARN] matplotlib 未安装, CLI 图表功能不可用 (Web 不受影响)")
     try:
-        import rich
+        import rich  # noqa: F401
         print("[OK] rich 可用 (CLI 表格美化就绪)")
     except Exception:
         print("[INFO] rich 未安装, CLI 将使用简化表格")
