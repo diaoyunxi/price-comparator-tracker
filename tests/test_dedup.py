@@ -9,7 +9,6 @@
 - clean_products: 异常过滤/去重/排序
 """
 
-import os
 import sys
 from pathlib import Path
 
