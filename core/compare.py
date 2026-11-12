@@ -210,9 +210,8 @@ def build_compare_table(products: List[Product]) -> List[dict]:
     Returns:
         [{'platform', 'title', 'price', 'sales', 'shop', 'shop_rating', 'url'}, ...]
     """
-    rows = []
-    for p in products:
-        rows.append({
+    return [
+        {
             "platform": p.platform,
             "title": p.title,
             "price": p.price,
@@ -222,8 +221,9 @@ def build_compare_table(products: List[Product]) -> List[dict]:
             "url": p.url,
             "image_url": p.image_url,
             "url_hash": p.url_hash,
-        })
-    return rows
+        }
+        for p in products
+    ]
 
 
 def cheapest_vs_most_expensive(products: List[Product]) -> dict:
