@@ -20,7 +20,6 @@ from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
-from config import get_config
 from core.dedup import parse_price, parse_sales
 from core.models import Product
 from scrapers.base import BaseScraper

@@ -75,7 +75,7 @@ class BaseScraper(ABC):
             logger.warning("[%s] 真实采集返回空, 回退 Mock", self.platform)
             result.error = "real_crawl_empty"
         except Exception as e:
-            logger.warning("[%s] 真实采集异常: %s, 回退 Mock", self.platform, e)
+            logger.warning("[%s] 真实采集异常: %s, 回退 Mock", self.platform, e, exc_info=True)
             result.error = f"real_crawl_exc:{type(e).__name__}"
 
         # 4. 回退 Mock (保留原平台标识, 便于横向对比展示)
