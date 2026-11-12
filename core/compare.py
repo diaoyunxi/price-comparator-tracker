@@ -111,19 +111,19 @@ def compute_recommendations(
     price_map: Dict[int, float] = {}
     if prices:
         for p, nv in zip(valid_products,
-                         normalize(prices, invert=True)):
+                         normalize(prices, invert=True), strict=False):
             price_map[id(p)] = nv
 
     sales_map: Dict[int, float] = {}
     if sales:
         for p, nv in zip(valid_products,
-                         normalize(sales, invert=False)):
+                         normalize(sales, invert=False), strict=False):
             sales_map[id(p)] = nv
 
     rating_map: Dict[int, float] = {}
     if ratings:
         for p, nv in zip(valid_products,
-                         normalize(ratings, invert=False)):
+                         normalize(ratings, invert=False), strict=False):
             rating_map[id(p)] = nv
 
     score_list: List[tuple] = []
