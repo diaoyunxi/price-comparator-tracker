@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 import urllib.request
-from typing import Optional, Tuple
 
 from config import PROJECT_ROOT, read_version
-
 
 logger = logging.getLogger("updater")
 
@@ -27,7 +26,7 @@ logger = logging.getLogger("updater")
 # GitHub 仓库信息 (用户可改)
 GITHUB_REPO = "price-comparator-tracker"
 # 由于不确定用户名, 使用环境变量优先
-import os
+
 GITHUB_OWNER = os.environ.get("PRICE_TRACKER_GH_OWNER", "")
 
 
@@ -45,7 +44,7 @@ def _parse_version(v: str) -> tuple:
 
 
 def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
-                         timeout: int = 5) -> Optional[dict]:
+                         timeout: int = 5) -> dict | None:
     """
     拉取 GitHub 最新 release 信息
 
@@ -91,8 +90,8 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
 
 def _detect_owner_from_git() -> str:
     """从 git remote 配置中检测 owner"""
-    import subprocess
     import shutil
+    import subprocess
     try:
         git_path = shutil.which("git") or "git"
         r = subprocess.run(
@@ -113,7 +112,7 @@ def _detect_owner_from_git() -> str:
     return ""
 
 
-def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
+def check_for_updates(silent: bool = True) -> tuple[bool, dict | None]:
     """
     检查是否有更新
 
