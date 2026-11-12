@@ -61,35 +61,35 @@ def _hash_sku(keyword: str, idx: int, platform: str) -> str:
 
 def _gen_title(keyword: str) -> str:
     """生成标题: 关键词 + 品牌 + 规格 + 后缀"""
-    brand = random.choice(BRANDS)
-    spec = random.choice(SPECS)
-    suffix = random.choice(SUFFIXES)
+    brand = random.choice(BRANDS)  # noqa: S311 -- 模拟数据无需密码学安全
+    spec = random.choice(SPECS)  # noqa: S311
+    suffix = random.choice(SUFFIXES)  # noqa: S311
     return f"{brand} {keyword} {spec} {suffix}"
 
 
 def _gen_price(base: float) -> float:
     """基准价 * (0.5 ~ 2.0) + 微抖动"""
-    factor = random.uniform(0.5, 2.0)
-    noise = random.uniform(-5, 5)
+    factor = random.uniform(0.5, 2.0)  # noqa: S311
+    noise = random.uniform(-5, 5)  # noqa: S311
     price = base * factor + noise
     return round(max(price, 9.9), 2)
 
 
 def _gen_sales() -> int:
     """对数分布销量: 5% 爆款 (1w+), 30% 中等 (1k-1w), 65% 普通 (<1k)"""
-    r = random.random()
+    r = random.random()  # noqa: S311
     if r < 0.05:
-        return random.randint(10_000, 50_000)
+        return random.randint(10_000, 50_000)  # noqa: S311
     elif r < 0.35:
-        return random.randint(1_000, 10_000)
+        return random.randint(1_000, 10_000)  # noqa: S311
     else:
-        return random.randint(10, 1_000)
+        return random.randint(10, 1_000)  # noqa: S311
 
 
 def _gen_shop() -> str:
     """生成店铺名"""
-    brand = random.choice(BRANDS)
-    shop_type = random.choice(SHOP_PREFIXES)
+    brand = random.choice(BRANDS)  # noqa: S311 -- 模拟数据无需密码学安全
+    shop_type = random.choice(SHOP_PREFIXES)  # noqa: S311
     return f"{brand}{shop_type}"
 
 
@@ -191,7 +191,7 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
         90 条示例商品 (3 平台各 30 条)
     """
     # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
-    local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])
+    local_rng = random.Random(hashlib.md5(keyword.encode("utf-8")).hexdigest()[:8])  # noqa: S311 -- 模拟数据种子无需密码学安全
     result: List[Product] = []
     for platform in ("jd", "taobao", "pdd"):
         result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
