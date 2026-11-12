@@ -36,6 +36,7 @@ import argparse
 import json
 import os
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -234,10 +235,9 @@ def cmd_search(args: argparse.Namespace) -> int:
             os.replace(tmp_path, out)
             print(f"\n结果 JSON 已保存: {out}")
         except Exception:
-            try:
+            import contextlib
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path)
-            except OSError:
-                pass
             raise
 
     print(f"\n总耗时: {result.elapsed:.2f}s")
@@ -270,10 +270,9 @@ def _export(result, fmt: str) -> None:
             os.replace(tmp_path, out)
             print(f"JSON 已导出: {out}")
         except Exception:
-            try:
+            import contextlib
+            with contextlib.suppress(OSError):
                 os.unlink(tmp_path)
-            except OSError:
-                pass
             raise
 
 
