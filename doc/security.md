@@ -1,3 +1,5 @@
+> [← 返回文档目录](../README.md) ｜ 原文件：`SECURITY.md`。
+
 # Security Policy
 
 ## Supported Versions
@@ -31,4 +33,3 @@ Vulnerabilities in the following areas are in scope:
 - Physical access attacks
 
 Thank you for helping keep this project secure.
-
