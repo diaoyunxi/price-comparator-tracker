@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 try:
     import yaml  # 可选依赖, 缺失时使用默认配置
