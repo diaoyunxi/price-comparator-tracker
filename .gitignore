@@ -56,3 +56,8 @@ proxy_pool.txt
 # Keep .gitkeep tracked, ignore export files
 exports/*
 !exports/.gitkeep
+
+# Environment files (may contain secrets)
+.env
+.env.local
+.env.*.local
