@@ -1,3 +1,5 @@
+> [← 返回文档目录](../README.md) ｜ 原文件：`CONTRIBUTING.md`。
+
 # Contributing
 
 Thank you for your interest in contributing to this project!
@@ -33,7 +35,7 @@ Thank you for your interest in contributing to this project!
 
 ### Security Issues
 
-Please do **not** report security vulnerabilities through public issues or pull requests. See [SECURITY.md](SECURITY.md) for the proper disclosure process.
+Please do **not** report security vulnerabilities through public issues or pull requests. See [SECURITY.md](security.md) for the proper disclosure process.
 
 ## Development Setup
 
