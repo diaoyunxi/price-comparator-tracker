@@ -15,12 +15,11 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from config import get_config
 from core.compare import (
-    Recommendation, PlatformStats, build_compare_table,
-    compute_recommendations, platform_stats, cheapest_vs_most_expensive,
+    Recommendation, PlatformStats, compute_recommendations, platform_stats, cheapest_vs_most_expensive,
 )
 from core.database import Database
 from core.dedup import clean_products
