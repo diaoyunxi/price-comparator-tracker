@@ -34,20 +34,18 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import logging
+import os
 import sys
 import time
 from pathlib import Path
-from typing import List, Optional
 
 # 让 `python cli.py` 直接运行时也能找到包
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import get_config, read_version, EXPORT_DIR
+from config import EXPORT_DIR, get_config, read_version
 from core.database import Database
 from core.runner import run_crawl
-
 
 # ---------------------------------------------------------------------------
 # 日志配置
@@ -64,6 +62,7 @@ DISPLAY_WIDTH_NARROW = 400  # 窄屏显示宽度
 DISPLAY_WIDTH_MEDIUM = 600  # 中屏显示宽度
 MAX_ITEMS_PER_PAGE = 5  # 每页最大项目数
 
+
 def _setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
@@ -77,11 +76,12 @@ def _setup_logging(verbose: bool = False) -> None:
 # ---------------------------------------------------------------------------
 # Rich 表格渲染 (缺失时退化 plain text)
 # ---------------------------------------------------------------------------
-def _render_table(headers: List[str], rows: List[List[str]], title: str = "") -> None:
+def _render_table(headers: list[str], rows: list[list[str]], title: str = "") -> None:
     """渲染表格, 优先 rich, 缺失则退化"""
     try:
         from rich.console import Console
         from rich.table import Table
+
         console = Console()
         table = Table(title=title, show_lines=False, header_style="bold magenta")
         for h in headers:
@@ -135,10 +135,16 @@ def cmd_search(args: argparse.Namespace) -> int:
     # ------------------------------------------------------------------
     _render_table(
         ["平台", "采集数", "Mock回退", "耗时(s)", "错误"],
-        [[r["platform"], len(r.get("products", [])),
-          "是" if r.get("used_mock") else "否",
-          r.get("elapsed", 0), r.get("error", "")[:30]]
-         for r in result.raw_results],
+        [
+            [
+                r["platform"],
+                len(r.get("products", [])),
+                "是" if r.get("used_mock") else "否",
+                r.get("elapsed", 0),
+                r.get("error", "")[:30],
+            ]
+            for r in result.raw_results
+        ],
         title="采集摘要",
     )
 
@@ -146,8 +152,10 @@ def cmd_search(args: argparse.Namespace) -> int:
     # 2. 清洗统计
     # ------------------------------------------------------------------
     cs = result.clean_stats
-    print(f"\n清洗: 输入 {cs.get('input', 0)} -> 输出 {cs.get('output', 0)} "
-          f"(无效价格 {cs.get('invalid_price', 0)}, 重复 {cs.get('duplicates', 0)})")
+    print(
+        f"\n清洗: 输入 {cs.get('input', 0)} -> 输出 {cs.get('output', 0)} "
+        f"(无效价格 {cs.get('invalid_price', 0)}, 重复 {cs.get('duplicates', 0)})"
+    )
 
     # ------------------------------------------------------------------
     # 3. 商品对比表 (按价格升序)
@@ -156,14 +164,16 @@ def cmd_search(args: argparse.Namespace) -> int:
     if show_n > 0:
         rows = []
         for p in result.products[:show_n]:
-            rows.append([
-                _platform_name(p.platform),
-                p.title[:TITLE_TRUNCATE_LENGTH_LIST] + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_LIST else ""),
-                f"¥{p.price:.2f}" if p.price > 0 else "N/A",
-                f"{p.sales:,}" if p.sales >= 0 else "N/A",
-                p.shop[:18],
-                f"{p.shop_rating:.1f}" if p.shop_rating >= 0 else "N/A",
-            ])
+            rows.append(
+                [
+                    _platform_name(p.platform),
+                    p.title[:TITLE_TRUNCATE_LENGTH_LIST] + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_LIST else ""),
+                    f"¥{p.price:.2f}" if p.price > 0 else "N/A",
+                    f"{p.sales:,}" if p.sales >= 0 else "N/A",
+                    p.shop[:18],
+                    f"{p.shop_rating:.1f}" if p.shop_rating >= 0 else "N/A",
+                ]
+            )
         _render_table(
             ["平台", "商品标题", "价格", "销量", "店铺", "评分"],
             rows,
@@ -174,10 +184,18 @@ def cmd_search(args: argparse.Namespace) -> int:
     # 4. 平台统计
     # ------------------------------------------------------------------
     if result.platform_stats:
-        rows = [[s.platform, s.count, f"¥{s.avg_price:.2f}",
-                 f"¥{s.min_price:.2f}", f"¥{s.max_price:.2f}",
-                 f"{s.avg_sales:,}", f"{s.avg_rating:.2f}"]
-                for s in result.platform_stats]
+        rows = [
+            [
+                s.platform,
+                s.count,
+                f"¥{s.avg_price:.2f}",
+                f"¥{s.min_price:.2f}",
+                f"¥{s.max_price:.2f}",
+                f"{s.avg_sales:,}",
+                f"{s.avg_rating:.2f}",
+            ]
+            for s in result.platform_stats
+        ]
         _render_table(
             ["平台", "条数", "均价", "最低", "最高", "均销量", "均评分"],
             rows,
@@ -189,10 +207,14 @@ def cmd_search(args: argparse.Namespace) -> int:
     # ------------------------------------------------------------------
     if result.cheapest and result.most_expensive:
         print("\n价差分析:")
-        print(f"  最便宜: [{_platform_name(result.cheapest.platform)}] "
-              f"{result.cheapest.title[:30]} ¥{result.cheapest.price:.2f}")
-        print(f"  最贵:   [{_platform_name(result.most_expensive.platform)}] "
-              f"{result.most_expensive.title[:30]} ¥{result.most_expensive.price:.2f}")
+        print(
+            f"  最便宜: [{_platform_name(result.cheapest.platform)}] "
+            f"{result.cheapest.title[:30]} ¥{result.cheapest.price:.2f}"
+        )
+        print(
+            f"  最贵:   [{_platform_name(result.most_expensive.platform)}] "
+            f"{result.most_expensive.title[:30]} ¥{result.most_expensive.price:.2f}"
+        )
         print(f"  价差:   ¥{result.price_gap:.2f} ({result.price_gap_ratio:.1f}%)")
 
     # ------------------------------------------------------------------
@@ -202,15 +224,18 @@ def cmd_search(args: argparse.Namespace) -> int:
         rows = []
         for rec in result.recommendations:
             p = rec.product
-            rows.append([
-                f"#{rec.rank}",
-                _platform_name(p.platform),
-                p.title[:TITLE_TRUNCATE_LENGTH_RECOMMEND] + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_RECOMMEND else ""),
-                f"¥{p.price:.2f}" if p.price > 0 else "N/A",
-                f"{p.sales:,}" if p.sales >= 0 else "N/A",
-                f"{rec.score:.1f}",
-                rec.reason,
-            ])
+            rows.append(
+                [
+                    f"#{rec.rank}",
+                    _platform_name(p.platform),
+                    p.title[:TITLE_TRUNCATE_LENGTH_RECOMMEND]
+                    + ("..." if len(p.title) > TITLE_TRUNCATE_LENGTH_RECOMMEND else ""),
+                    f"¥{p.price:.2f}" if p.price > 0 else "N/A",
+                    f"{p.sales:,}" if p.sales >= 0 else "N/A",
+                    f"{rec.score:.1f}",
+                    rec.reason,
+                ]
+            )
         _render_table(
             ["排名", "平台", "商品", "价格", "销量", "综合分", "推荐理由"],
             rows,
@@ -226,6 +251,7 @@ def cmd_search(args: argparse.Namespace) -> int:
         _generate_charts(result, db, args.trend_days)
     if args.save_json:
         import tempfile
+
         out = EXPORT_DIR / f"result_{args.keyword}_{int(time.time())}.json"
         fd, tmp_path = tempfile.mkstemp(dir=EXPORT_DIR, suffix=".tmp")
         try:
@@ -247,8 +273,10 @@ def cmd_search(args: argparse.Namespace) -> int:
 def _export(result, fmt: str) -> None:
     """导出 CSV / JSON"""
     from core.compare import build_compare_table
+
     if fmt == "csv":
         import csv
+
         out = EXPORT_DIR / f"products_{result.keyword}_{int(time.time())}.csv"
         rows = build_compare_table(result.products)
         if not rows:
@@ -262,6 +290,7 @@ def _export(result, fmt: str) -> None:
         print(f"CSV 已导出: {out}")
     elif fmt == "json":
         import tempfile
+
         out = EXPORT_DIR / f"products_{result.keyword}_{int(time.time())}.json"
         fd, tmp_path = tempfile.mkstemp(dir=EXPORT_DIR, suffix=".tmp")
         try:
@@ -281,15 +310,16 @@ def _generate_charts(result, db, trend_days: int) -> None:
     """生成图表"""
     try:
         from viz.charts import (
+            chart_platform_avg,
             chart_platform_price_box,
             chart_price_distribution,
-            chart_platform_avg,
             chart_price_trend,
         )
     except ImportError as e:
         print(f"可视化模块未安装: {e}")
         return
     from config import get_config
+
     cfg = get_config()
 
     print("\n生成图表中...")
@@ -305,8 +335,7 @@ def _generate_charts(result, db, trend_days: int) -> None:
 
     # 趋势图 (取最便宜商品)
     if db and result.cheapest and result.cheapest.url_hash:
-        p4 = chart_price_trend(db, result.cheapest.url_hash,
-                              result.cheapest.title[:30], days=trend_days)
+        p4 = chart_price_trend(db, result.cheapest.url_hash, result.cheapest.title[:30], days=trend_days)
         if p4:
             print(f"  [OK] 价格趋势图: {p4}")
 
@@ -327,8 +356,7 @@ def cmd_trend(args: argparse.Namespace) -> int:
             print(f"\n关键词 '{args.keyword}' 最近采集的商品:")
             for p in products:
                 if p.url_hash:
-                    print(f"  {p.url_hash}  [{_platform_name(p.platform)}] "
-                          f"{p.title[:30]}  ¥{p.price:.2f}")
+                    print(f"  {p.url_hash}  [{_platform_name(p.platform)}] {p.title[:30]}  ¥{p.price:.2f}")
             print(f"\n用法: python cli.py trend --url-hash <上面的哈希> --days {args.days}")
             return 0
         # 未指定 url_hash 也未指定 keyword，列出所有关键词
@@ -368,8 +396,7 @@ def cmd_history(args: argparse.Namespace) -> int:
         print("无历史记录")
         return 0
     print(f"\n最近 {len(rows)} 个关键词:")
-    _render_table(["关键词", "最后采集时间"], [[k, t] for k, t in rows],
-                 title="采集历史")
+    _render_table(["关键词", "最后采集时间"], [[k, t] for k, t in rows], title="采集历史")
     return 0
 
 
@@ -402,46 +429,31 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="更多文档见 README.md",
     )
-    parser.add_argument("-V", "--version", action="version",
-                       version=f"price-comparator {read_version()}")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                       help="开启 DEBUG 日志")
+    parser.add_argument("-V", "--version", action="version", version=f"price-comparator {read_version()}")
+    parser.add_argument("-v", "--verbose", action="store_true", help="开启 DEBUG 日志")
 
     sub = parser.add_subparsers(dest="command", required=True, metavar="<command>")
 
     # search
     p_search = sub.add_parser("search", help="按关键词采集并对比")
     p_search.add_argument("keyword", help="搜索关键词")
-    p_search.add_argument("--platforms", default="",
-                         help="平台列表 (逗号分隔), 默认全部: jd,taobao,pdd")
-    p_search.add_argument("--limit", type=int, default=30,
-                         help="每平台采集条数 (默认 30)")
-    p_search.add_argument("--mock", action="store_true",
-                         help="仅使用 Mock 数据 (跳过真实爬虫)")
-    p_search.add_argument("--serial", action="store_true",
-                         help="串行采集 (调试用)")
-    p_search.add_argument("--show", type=int, default=10,
-                         help="展示前 N 条商品 (默认 10)")
-    p_search.add_argument("--export", choices=["csv", "json"],
-                         help="导出格式")
-    p_search.add_argument("--chart", action="store_true",
-                         help="生成 matplotlib 图表")
-    p_search.add_argument("--save-json", action="store_true",
-                         help="保存完整结果 JSON")
-    p_search.add_argument("--trend-days", type=int, default=30,
-                         help="趋势图天数")
-    p_search.add_argument("--no-db", action="store_true",
-                         help="不写入数据库")
+    p_search.add_argument("--platforms", default="", help="平台列表 (逗号分隔), 默认全部: jd,taobao,pdd")
+    p_search.add_argument("--limit", type=int, default=30, help="每平台采集条数 (默认 30)")
+    p_search.add_argument("--mock", action="store_true", help="仅使用 Mock 数据 (跳过真实爬虫)")
+    p_search.add_argument("--serial", action="store_true", help="串行采集 (调试用)")
+    p_search.add_argument("--show", type=int, default=10, help="展示前 N 条商品 (默认 10)")
+    p_search.add_argument("--export", choices=["csv", "json"], help="导出格式")
+    p_search.add_argument("--chart", action="store_true", help="生成 matplotlib 图表")
+    p_search.add_argument("--save-json", action="store_true", help="保存完整结果 JSON")
+    p_search.add_argument("--trend-days", type=int, default=30, help="趋势图天数")
+    p_search.add_argument("--no-db", action="store_true", help="不写入数据库")
     p_search.set_defaults(func=cmd_search)
 
     # trend
     p_trend = sub.add_parser("trend", help="查看商品价格趋势")
-    p_trend.add_argument("--url-hash", default="",
-                         help="商品 URL 哈希 (省略则列出关键词)")
-    p_trend.add_argument("--keyword", default="",
-                         help="按关键词查最近商品 url_hash")
-    p_trend.add_argument("--days", type=int, default=30,
-                         help="趋势天数")
+    p_trend.add_argument("--url-hash", default="", help="商品 URL 哈希 (省略则列出关键词)")
+    p_trend.add_argument("--keyword", default="", help="按关键词查最近商品 url_hash")
+    p_trend.add_argument("--days", type=int, default=30, help="趋势天数")
     p_trend.set_defaults(func=cmd_trend)
 
     # history
@@ -459,7 +471,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)

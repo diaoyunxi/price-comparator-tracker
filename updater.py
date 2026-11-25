@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 import urllib.request
-from typing import Optional, Tuple
 
 from config import PROJECT_ROOT, read_version
-
 
 logger = logging.getLogger("updater")
 
@@ -27,7 +26,6 @@ logger = logging.getLogger("updater")
 # GitHub 仓库信息 (用户可改)
 GITHUB_REPO = "price-comparator-tracker"
 # 由于不确定用户名, 使用环境变量优先
-import os
 GITHUB_OWNER = os.environ.get("PRICE_TRACKER_GH_OWNER", "")
 
 
@@ -44,8 +42,7 @@ def _parse_version(v: str) -> tuple:
     return tuple(parts[:3])
 
 
-def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
-                         timeout: int = 5) -> Optional[dict]:
+def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO, timeout: int = 5) -> dict | None:
     """
     拉取 GitHub 最新 release 信息
 
@@ -70,10 +67,13 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
     if not url.lower().startswith(("http://", "https://")):
         logger.debug("拒绝非 HTTP(S) 协议 URL: %s", url)
         return None
-    req = urllib.request.Request(url, headers={
-        "Accept": "application/vnd.github+json",
-        "User-Agent": f"{repo}-updater/{read_version()}",
-    })
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": f"{repo}-updater/{read_version()}",
+        },
+    )
     # 在 try 之前初始化 raw_text, 避免异常处理中引用未定义变量
     raw_text = ""
     try:
@@ -91,13 +91,17 @@ def fetch_latest_release(owner: str = "", repo: str = GITHUB_REPO,
 
 def _detect_owner_from_git() -> str:
     """从 git remote 配置中检测 owner"""
-    import subprocess
     import shutil
+    import subprocess
+
     try:
         git_path = shutil.which("git") or "git"
         r = subprocess.run(
             [git_path, "config", "--get", "remote.origin.url"],
-            cwd=str(PROJECT_ROOT), capture_output=True, text=True, timeout=3,
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=3,
         )
         url = r.stdout.strip()
         # https://github.com/owner/repo.git
@@ -108,12 +112,12 @@ def _detect_owner_from_git() -> str:
         # git@github.com:owner/repo.git
         if url.startswith("git@github.com:"):
             return url.split(":")[1].split("/")[0]
-    except Exception:
-        pass  # TODO: add proper error handling
+    except Exception as exc:
+        logger.debug("从 git remote 检测 owner 失败: %s", exc)
     return ""
 
 
-def check_for_updates(silent: bool = True) -> Tuple[bool, Optional[dict]]:
+def check_for_updates(silent: bool = True) -> tuple[bool, dict | None]:
     """
     检查是否有更新
 

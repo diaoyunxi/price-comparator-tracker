@@ -28,7 +28,9 @@ jobs:
 
       - name: Lint with ruff
         run: |
-          ruff check . --select F,E,S,B --output-format=github
+          # 统一使用 pyproject.toml 的 [tool.ruff.lint] 规则集（select 含 E,F,S,B 全部族）；
+          # 硬编码 --select 会绕过项目已带理由的 ignore，并与 python-lint.yml 的判定互相矛盾。
+          ruff check . --output-format=github
 
       - name: Security check with bandit
         run: |

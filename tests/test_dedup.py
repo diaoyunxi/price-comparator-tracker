@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest
 
-from core.dedup import parse_price, parse_sales, parse_rating, clean_title, clean_products
+from core.dedup import clean_products, clean_title, parse_price, parse_rating, parse_sales
 from core.models import Product
 
 

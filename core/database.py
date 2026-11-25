@@ -15,13 +15,11 @@ import logging
 import sqlite3
 import threading
 from contextlib import contextmanager
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 from config import DBConfig, get_config
 from core.models import Product
-
 
 logger = logging.getLogger("database")
 
@@ -65,11 +63,11 @@ class Database:
     );
     """
 
-    def __init__(self, cfg: Optional[DBConfig] = None) -> None:
+    def __init__(self, cfg: DBConfig | None = None) -> None:
         self.cfg = cfg or get_config().db
         Path(self.cfg.path).parent.mkdir(parents=True, exist_ok=True)
         # 使用长连接复用，避免每次操作都创建/关闭连接
-        self._db_conn: Optional[sqlite3.Connection] = None
+        self._db_conn: sqlite3.Connection | None = None
         self._init_schema()
 
     # ------------------------------------------------------------------
@@ -86,7 +84,7 @@ class Database:
 
     def close(self):
         """关闭数据库连接"""
-        if hasattr(self, '_connection') and self._connection:
+        if hasattr(self, "_connection") and self._connection:
             self._connection.close()
             self._connection = None
 
@@ -94,9 +92,7 @@ class Database:
     def _connection(self) -> sqlite3.Connection:
         """获取复用的数据库连接 (懒初始化, 线程安全通过 _lock 保护写入)"""
         if self._db_conn is None:
-            self._db_conn = sqlite3.connect(
-                self.cfg.path, timeout=30, check_same_thread=False
-            )
+            self._db_conn = sqlite3.connect(self.cfg.path, timeout=30, check_same_thread=False)
             self._db_conn.row_factory = sqlite3.Row
             # 启用 WAL 模式, 提升并发读写性能并减少锁冲突
             if getattr(self.cfg, "enable_wal", True):
@@ -125,7 +121,7 @@ class Database:
     # ------------------------------------------------------------------
     # 写入
     # ------------------------------------------------------------------
-    def save_products(self, keyword: str, products: List[Product]) -> int:
+    def save_products(self, keyword: str, products: list[Product]) -> int:
         """
         批量保存商品快照
 
@@ -166,7 +162,7 @@ class Database:
         with self._conn() as conn:
             with _lock:
                 for i in range(0, len(rows), BATCH_SIZE):
-                    batch = rows[i:i + BATCH_SIZE]
+                    batch = rows[i : i + BATCH_SIZE]
                     conn.executemany(
                         """INSERT INTO products
                            (keyword, platform, title, price, sales, shop, shop_rating,
@@ -177,8 +173,7 @@ class Database:
                     total += len(batch)
         return total
 
-    def save_meta(self, keyword: str, platform: str, used_mock: bool,
-                  error: str, elapsed: float) -> None:
+    def save_meta(self, keyword: str, platform: str, used_mock: bool, error: str, elapsed: float) -> None:
         """记录采集任务元信息"""
         with self._conn() as conn:
             with _lock:
@@ -186,14 +181,20 @@ class Database:
                     """INSERT INTO crawl_meta
                        (keyword, platform, used_mock, error, elapsed, created_at)
                        VALUES (?,?,?,?,?,?)""",
-                    (keyword, platform, int(used_mock), error, elapsed,
-                     datetime.now(timezone.utc).isoformat(timespec="seconds")),
+                    (
+                        keyword,
+                        platform,
+                        int(used_mock),
+                        error,
+                        elapsed,
+                        datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    ),
                 )
 
     # ------------------------------------------------------------------
     # 查询
     # ------------------------------------------------------------------
-    def get_latest_by_keyword(self, keyword: str) -> List[Product]:
+    def get_latest_by_keyword(self, keyword: str) -> list[Product]:
         """
         获取某关键词最近一次采集的所有商品 (按 url_hash + 最新 fetched_at)
 
@@ -218,7 +219,7 @@ class Database:
             ).fetchall()
         return [self._row_to_product(r) for r in rows]
 
-    def get_price_trend(self, url_hash: str, days: int = 30) -> List[Tuple[str, float]]:
+    def get_price_trend(self, url_hash: str, days: int = 30) -> list[tuple[str, float]]:
         """
         查询某商品最近 N 天的价格趋势
 
@@ -241,7 +242,7 @@ class Database:
             ).fetchall()
         return [(r["fetched_date"], r["price"]) for r in rows]
 
-    def get_trend_for_keyword(self, keyword: str, days: int = 30) -> Dict[str, List[Tuple[str, float]]]:
+    def get_trend_for_keyword(self, keyword: str, days: int = 30) -> dict[str, list[tuple[str, float]]]:
         """
         批量查询关键词下所有商品的价格趋势
 
@@ -258,12 +259,12 @@ class Database:
                    ORDER BY url_hash, fetched_date""",
                 (keyword, since),
             ).fetchall()
-        result: Dict[str, List[Tuple[str, float]]] = {}
+        result: dict[str, list[tuple[str, float]]] = {}
         for r in rows:
             result.setdefault(r["url_hash"], []).append((r["fetched_date"], r["price"]))
         return result
 
-    def list_keywords(self, limit: int = 50) -> List[Tuple[str, str]]:
+    def list_keywords(self, limit: int = 50) -> list[tuple[str, str]]:
         """列出最近采集的关键词及时间"""
         with self._conn() as conn:
             rows = conn.execute(
@@ -296,9 +297,7 @@ class Database:
         cutoff = (datetime.now(timezone.utc) - timedelta(days=retention_days)).strftime("%Y-%m-%d")
         with self._conn() as conn:
             with _lock:
-                cur = conn.execute(
-                    "DELETE FROM products WHERE fetched_date < ?", (cutoff,)
-                )
+                cur = conn.execute("DELETE FROM products WHERE fetched_date < ?", (cutoff,))
                 return cur.rowcount
 
     # ------------------------------------------------------------------

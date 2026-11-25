@@ -23,10 +23,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from config import (
-    PROJECT_ROOT, DATA_DIR, RUNTIME_DIR, EXPORT_DIR, LOG_DIR,
-    DB_PATH, read_version,
+    DATA_DIR,
+    DB_PATH,
+    EXPORT_DIR,
+    LOG_DIR,
+    PROJECT_ROOT,
+    RUNTIME_DIR,
+    read_version,
 )
-
 
 REQUIRED_PY = (3, 8)
 
@@ -51,8 +55,7 @@ def install_dependencies() -> bool:
     # 选择性安装: playwright 较重, 单独提示
     try:
         rc = subprocess.call(
-            [sys.executable, "-m", "pip", "install", "-r", str(req),
-             "--disable-pip-version-check", "--quiet"],
+            [sys.executable, "-m", "pip", "install", "-r", str(req), "--disable-pip-version-check", "--quiet"],
             timeout=300,
         )
     except subprocess.TimeoutExpired:
@@ -94,6 +97,7 @@ def check_updates() -> None:
     print("\n[CHECK] 检查更新...")
     try:
         from updater import check_for_updates
+
         has_update, release = check_for_updates(silent=True)
         if has_update and release:
             print(f"[INFO] 发现新版本: {release.get('tag_name')} (当前 v{read_version()})")
@@ -130,9 +134,9 @@ def verify_imports() -> bool:
 def print_usage() -> None:
     """打印使用指引"""
     print(f"""
-{'=' * 60}
+{"=" * 60}
   电商商品价格采集与对比工具 v{read_version()} - 安装完成
-{'=' * 60}
+{"=" * 60}
 
   命令行使用:
     # 快速演示 (Mock 数据)
@@ -163,7 +167,7 @@ def print_usage() -> None:
 
   文档: README.md
   API:  http://localhost:8765/docs
-{'=' * 60}
+{"=" * 60}
 """)
 
 

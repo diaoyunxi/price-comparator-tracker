@@ -7,9 +7,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict
 
 try:
     import yaml  # 可选依赖, 缺失时使用默认配置
@@ -50,6 +49,7 @@ def read_version() -> str:
 @dataclass
 class CrawlConfig:
     """爬虫与反爬配置"""
+
     # 每关键词每平台抓取条数
     limit_per_platform: int = 30
     # 请求间隔随机区间 (秒)
@@ -79,6 +79,7 @@ class CrawlConfig:
 @dataclass
 class DBConfig:
     """SQLite 配置"""
+
     path: str = str(DB_PATH)
     # 历史保留天数, 0 表示永久保留
     retention_days: int = 0
@@ -89,6 +90,7 @@ class DBConfig:
 @dataclass
 class WebConfig:
     """Web 服务配置"""
+
     # 默认绑定 127.0.0.1, 避免暴露到公网 (安全风险)
     host: str = "127.0.0.1"
     port: int = 8765
@@ -99,15 +101,18 @@ class WebConfig:
 @dataclass
 class AppConfig:
     """应用总配置"""
+
     crawl: CrawlConfig = field(default_factory=CrawlConfig)
     db: DBConfig = field(default_factory=DBConfig)
     web: WebConfig = field(default_factory=WebConfig)
     # 平台标识 -> 中文名
-    platforms: Dict[str, str] = field(default_factory=lambda: {
-        "jd": "京东",
-        "taobao": "淘宝",
-        "pdd": "拼多多",
-    })
+    platforms: dict[str, str] = field(
+        default_factory=lambda: {
+            "jd": "京东",
+            "taobao": "淘宝",
+            "pdd": "拼多多",
+        }
+    )
     # 性价比推荐数量
     recommend_top_n: int = 5
     # GitHub 仓库 (用于自动更新检查)

@@ -13,12 +13,10 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 from config import get_config
 from core.anti_crawl import AntiCrawlSession
 from core.models import CrawlResult, Product
-
 
 logger = logging.getLogger("scraper")
 
@@ -38,7 +36,7 @@ class BaseScraper(ABC):
     #: 平台中文名
     platform_name: str = "未知"
 
-    def __init__(self, session: Optional[AntiCrawlSession] = None) -> None:
+    def __init__(self, session: AntiCrawlSession | None = None) -> None:
         self.cfg = get_config().crawl
         self.session = session or AntiCrawlSession()
 
@@ -67,8 +65,13 @@ class BaseScraper(ABC):
                 result.products = products[:limit]
                 result.used_mock = False
                 result.elapsed = round(time.time() - start, 2)
-                logger.info("[%s] 真实采集成功: 关键词=%s 数量=%d 耗时=%.2fs",
-                           self.platform, keyword, len(result.products), result.elapsed)
+                logger.info(
+                    "[%s] 真实采集成功: 关键词=%s 数量=%d 耗时=%.2fs",
+                    self.platform,
+                    keyword,
+                    len(result.products),
+                    result.elapsed,
+                )
                 return result
 
             # 3. 真实爬取返回空 -> 回退 Mock
@@ -81,11 +84,11 @@ class BaseScraper(ABC):
         # 4. 回退 Mock (保留原平台标识, 便于横向对比展示)
         if self.cfg.fallback_to_mock:
             from scrapers.mock import generate_mock_for_platform
+
             result.products = generate_mock_for_platform(keyword, self.platform, limit)
             result.used_mock = True
             result.elapsed = round(time.time() - start, 2)
-            logger.info("[%s] Mock 回退完成: 关键词=%s 数量=%d",
-                       self.platform, keyword, len(result.products))
+            logger.info("[%s] Mock 回退完成: 关键词=%s 数量=%d", self.platform, keyword, len(result.products))
         else:
             result.elapsed = round(time.time() - start, 2)
         return result
@@ -94,7 +97,7 @@ class BaseScraper(ABC):
     # 子类实现
     # ------------------------------------------------------------------
     @abstractmethod
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         子类实现真实爬取逻辑
 

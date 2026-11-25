@@ -18,11 +18,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest
 
 from core.compare import (
-    normalize,
-    compute_recommendations,
-    platform_stats,
-    cheapest_vs_most_expensive,
     build_compare_table,
+    cheapest_vs_most_expensive,
+    compute_recommendations,
+    normalize,
+    platform_stats,
 )
 from core.models import Product
 
@@ -61,8 +61,7 @@ class TestComputeRecommendations:
     """推荐计算测试"""
 
     def _make(self, title, price, sales=-1, rating=-1.0, platform="jd", url=""):
-        return Product(platform=platform, title=title, price=price,
-                       sales=sales, shop_rating=rating, url=url)
+        return Product(platform=platform, title=title, price=price, sales=sales, shop_rating=rating, url=url)
 
     def test_empty(self):
         assert compute_recommendations([]) == []
@@ -87,8 +86,7 @@ class TestComputeRecommendations:
         assert recs[0].product.title == "有效A"
 
     def test_top_n_limit(self):
-        products = [self._make(f"商品{i}", float(i + 1) * 10, url=f"http://x/{i}")
-                    for i in range(10)]
+        products = [self._make(f"商品{i}", float(i + 1) * 10, url=f"http://x/{i}") for i in range(10)]
         recs = compute_recommendations(products, top_n=3)
         assert len(recs) == 3
 

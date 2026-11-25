@@ -22,26 +22,77 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.models import CrawlResult
-from typing import List
 
 from core.models import Product
-
 
 # ---------------------------------------------------------------------------
 # 词库
 # ---------------------------------------------------------------------------
-BRANDS = ["小米", "华为", "荣耀", "OPPO", "vivo", "苹果", "三星", "一加", "realme",
-          "魅族", "联想", "戴尔", "惠普", "华硕", "宏碁", "索尼", "JBL", "Bose",
-          "漫步者", "Anker", "倍思", "绿联", "小米米家", "海尔", "美的", "格力"]
+BRANDS = [
+    "小米",
+    "华为",
+    "荣耀",
+    "OPPO",
+    "vivo",
+    "苹果",
+    "三星",
+    "一加",
+    "realme",
+    "魅族",
+    "联想",
+    "戴尔",
+    "惠普",
+    "华硕",
+    "宏碁",
+    "索尼",
+    "JBL",
+    "Bose",
+    "漫步者",
+    "Anker",
+    "倍思",
+    "绿联",
+    "小米米家",
+    "海尔",
+    "美的",
+    "格力",
+]
 
-SUFFIXES = ["旗舰版", "青春版", "Pro", "Max", "Plus", "Ultra", "标准版", "增强版",
-            "2024款", "二代", "三代", "X", "S", "T", "限量版", "定制版"]
+SUFFIXES = [
+    "旗舰版",
+    "青春版",
+    "Pro",
+    "Max",
+    "Plus",
+    "Ultra",
+    "标准版",
+    "增强版",
+    "2024款",
+    "二代",
+    "三代",
+    "X",
+    "S",
+    "T",
+    "限量版",
+    "定制版",
+]
 
-SPECS = ["64G", "128G", "256G", "512G", "1T", "8+128", "12+256", "16+512",
-         "蓝牙5.3", "Type-C", "USB3.0", "快充66W", "120Hz"]
+SPECS = [
+    "64G",
+    "128G",
+    "256G",
+    "512G",
+    "1T",
+    "8+128",
+    "12+256",
+    "16+512",
+    "蓝牙5.3",
+    "Type-C",
+    "USB3.0",
+    "快充66W",
+    "120Hz",
+]
 
-SHOP_PREFIXES = ["官方旗舰店", "自营旗舰店", "专卖店", "专营店", "数码专营店",
-                 "旗舰店", "官方店", "授权店"]
+SHOP_PREFIXES = ["官方旗舰店", "自营旗舰店", "专卖店", "专营店", "数码专营店", "旗舰店", "官方店", "授权店"]
 SHOP_BRANDS = ["京东", "天猫", "拼多多", "极有家", "苏宁", "国美"]
 
 # 平台 -> 链接模板
@@ -114,7 +165,7 @@ class MockScraper:
     platform = "mock"
     platform_name = "模拟数据"
 
-    def search(self, keyword: str, limit: int = 30) -> "CrawlResult":
+    def search(self, keyword: str, limit: int = 30) -> CrawlResult:
         """
         生成 Mock 商品
 
@@ -126,27 +177,29 @@ class MockScraper:
             CrawlResult
         """
         from core.models import CrawlResult
+
         base = _base_price_for_keyword(keyword)
-        products: List[Product] = []
+        products: list[Product] = []
         for i in range(limit):
             title = _gen_title(keyword)
             sku = _hash_sku(keyword, i, "mock")
-            products.append(Product(
-                platform="mock",
-                title=title,
-                price=_gen_price(base),
-                sales=_gen_sales(),
-                shop=_gen_shop(),
-                shop_rating=_gen_rating(),
-                url=f"https://example.com/mock/{sku}",
-                image_url="",
-                sku_id=sku,
-            ))
-        return CrawlResult(keyword=keyword, platform="mock",
-                          products=products, used_mock=True, elapsed=0.0)
+            products.append(
+                Product(
+                    platform="mock",
+                    title=title,
+                    price=_gen_price(base),
+                    sales=_gen_sales(),
+                    shop=_gen_shop(),
+                    shop_rating=_gen_rating(),
+                    url=f"https://example.com/mock/{sku}",
+                    image_url="",
+                    sku_id=sku,
+                )
+            )
+        return CrawlResult(keyword=keyword, platform="mock", products=products, used_mock=True, elapsed=0.0)
 
 
-def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> List[Product]:
+def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> list[Product]:
     """
     为指定平台生成 Mock 商品 (用于真实爬虫回退)
 
@@ -160,25 +213,27 @@ def generate_mock_for_platform(keyword: str, platform: str, limit: int = 30) -> 
     """
     base = _base_price_for_keyword(keyword)
     url_tpl = URL_TEMPLATES.get(platform, "https://example.com/{sku}")
-    products: List[Product] = []
+    products: list[Product] = []
     for i in range(limit):
         title = _gen_title(keyword)
         sku = _hash_sku(keyword, i, platform)
-        products.append(Product(
-            platform=platform,
-            title=title,
-            price=_gen_price(base),
-            sales=_gen_sales(),
-            shop=_gen_shop(),
-            shop_rating=_gen_rating(),
-            url=url_tpl.format(sku=sku),
-            image_url="",
-            sku_id=sku,
-        ))
+        products.append(
+            Product(
+                platform=platform,
+                title=title,
+                price=_gen_price(base),
+                sales=_gen_sales(),
+                shop=_gen_shop(),
+                shop_rating=_gen_rating(),
+                url=url_tpl.format(sku=sku),
+                image_url="",
+                sku_id=sku,
+            )
+        )
     return products
 
 
-def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
+def generate_sample_dataset(keyword: str = "蓝牙耳机") -> list[Product]:
     """
     生成一份固定的示例数据集 (用于 Web 初始化展示)
 
@@ -192,31 +247,33 @@ def generate_sample_dataset(keyword: str = "蓝牙耳机") -> List[Product]:
     """
     # 使用局部 Random 实例，避免修改全局 random 状态导致多线程干扰
     local_rng = random.Random(hashlib.md5(keyword.encode("utf-8"), usedforsecurity=False).hexdigest()[:8])
-    result: List[Product] = []
+    result: list[Product] = []
     for platform in ("jd", "taobao", "pdd"):
         result.extend(_generate_mock_for_platform_with_rng(keyword, platform, 30, local_rng))
     return result
 
 
-def _generate_mock_for_platform_with_rng(keyword: str, platform: str, limit: int, rng: random.Random) -> List[Product]:
+def _generate_mock_for_platform_with_rng(keyword: str, platform: str, limit: int, rng: random.Random) -> list[Product]:
     """使用指定 Random 实例为平台生成 Mock 商品 (供 generate_sample_dataset 内部使用)"""
     base = _base_price_for_keyword(keyword)
     url_tpl = URL_TEMPLATES.get(platform, "https://example.com/{sku}")
-    products: List[Product] = []
+    products: list[Product] = []
     for i in range(limit):
         title = _gen_title_with_rng(keyword, rng)
         sku = _hash_sku(keyword, i, platform)
-        products.append(Product(
-            platform=platform,
-            title=title,
-            price=_gen_price_with_rng(base, rng),
-            sales=_gen_sales_with_rng(rng),
-            shop=_gen_shop_with_rng(rng),
-            shop_rating=_gen_rating_with_rng(rng),
-            url=url_tpl.format(sku=sku),
-            image_url="",
-            sku_id=sku,
-        ))
+        products.append(
+            Product(
+                platform=platform,
+                title=title,
+                price=_gen_price_with_rng(base, rng),
+                sales=_gen_sales_with_rng(rng),
+                shop=_gen_shop_with_rng(rng),
+                shop_rating=_gen_rating_with_rng(rng),
+                url=url_tpl.format(sku=sku),
+                image_url="",
+                sku_id=sku,
+            )
+        )
     return products
 
 

@@ -15,14 +15,12 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import List
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
 from core.models import Product
 from scrapers.base import BaseScraper
-
 
 logger = logging.getLogger("scraper.taobao")
 
@@ -33,7 +31,7 @@ class TaobaoScraper(BaseScraper):
     platform = "taobao"
     platform_name = "淘宝"
 
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         淘宝搜索: 优先移动端 H5
 
@@ -46,8 +44,7 @@ class TaobaoScraper(BaseScraper):
         """
         # 1. 移动端搜索页 (HTML)
         url = f"https://s.m.taobao.com/h5?&q={quote(keyword)}&search=y&from=1"
-        result = self.session.get(url, platform="taobao",
-                                 referer="https://s.m.taobao.com/")
+        result = self.session.get(url, platform="taobao", referer="https://s.m.taobao.com/")
         self._sleep()
         if result.success:
             products = self._parse_mobile_h5(result.text, keyword, limit)
@@ -63,8 +60,7 @@ class TaobaoScraper(BaseScraper):
         # 3. PC 端搜索 (基本会被重定向到登录)
         logger.debug("[%s] 移动端无结果, 尝试 PC 端", self.platform)
         url2 = f"https://s.taobao.com/search?q={quote(keyword)}&imgfile=&js=1&stats_click=search_radio_all%3A1"
-        result2 = self.session.get(url2, platform="taobao",
-                                  referer="https://www.taobao.com/")
+        result2 = self.session.get(url2, platform="taobao", referer="https://www.taobao.com/")
         self._sleep()
         if result2.success:
             products = self._extract_embedded_json(result2.text, keyword, limit)
@@ -76,9 +72,9 @@ class TaobaoScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """解析移动端 H5 搜索结果"""
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -87,8 +83,7 @@ class TaobaoScraper(BaseScraper):
         # 兼容多种容器类名
         items = soup.select("div.item, li.item, div.product, div.Card, div[data-spm]")
         if not items:
-            items = soup.find_all(["div", "li"],
-                                 class_=re.compile(r"(item|product|goods|card)", re.IGNORECASE))
+            items = soup.find_all(["div", "li"], class_=re.compile(r"(item|product|goods|card)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -102,6 +97,7 @@ class TaobaoScraper(BaseScraper):
                 price_el = el.select_one(".price, .item-price, .p-price, [class*=price]")
                 if price_el:
                     from core.dedup import parse_price
+
                     price = parse_price(price_el.get_text(strip=True))
                 # 链接
                 url = ""
@@ -123,17 +119,24 @@ class TaobaoScraper(BaseScraper):
                 sales_el = el.select_one(".sale, .sales, .sold, [class*=sale]")
                 if sales_el:
                     from core.dedup import parse_sales
+
                     sales = parse_sales(sales_el.get_text(strip=True))
                 # 店铺
                 shop_el = el.select_one(".shop, .store, .seller, [class*=shop]")
                 shop = shop_el.get_text(strip=True) if shop_el else "淘宝商家"
 
-                products.append(Product(
-                    platform=self.platform,
-                    title=title, price=price, sales=sales,
-                    shop=shop, shop_rating=-1.0,
-                    url=url, sku_id=sku_id,
-                ))
+                products.append(
+                    Product(
+                        platform=self.platform,
+                        title=title,
+                        price=price,
+                        sales=sales,
+                        shop=shop,
+                        shop_rating=-1.0,
+                        url=url,
+                        sku_id=sku_id,
+                    )
+                )
                 if len(products) >= limit:
                     break
             except Exception as e:
@@ -141,7 +144,7 @@ class TaobaoScraper(BaseScraper):
                 continue
         return products
 
-    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """
         从 HTML 中提取嵌入的 JSON 数据
 
@@ -150,27 +153,26 @@ class TaobaoScraper(BaseScraper):
         - g_page_config = {...}
         - mtop 返回的 JSONP
         """
-        products: List[Product] = []
+        products: list[Product] = []
         # 模式 1: g_page_config
         m = re.search(r"g_page_config\s*=\s*(\{.*?\})\s*[;<\n]", html, re.DOTALL)
         if m:
             try:
                 data = json.loads(m.group(1))
-                items = (data.get("mods", {})
-                            .get("itemlist", {})
-                            .get("data", {})
-                            .get("auctions", []))
+                items = data.get("mods", {}).get("itemlist", {}).get("data", {}).get("auctions", [])
                 for it in items:
-                    products.append(Product(
-                        platform=self.platform,
-                        title=it.get("raw_title", ""),
-                        price=float(it.get("view_price", -1) or -1),
-                        sales=_parse_sales_str(it.get("view_sales", it.get("view_sales_num", ""))),
-                        shop=it.get("nick", "淘宝"),
-                        shop_rating=float(it.get("shopcard", {}).get("slevel", -1) or -1),
-                        url=f"https://item.taobao.com/item.htm?id={it.get('nid','')}",
-                        sku_id=str(it.get("nid", "")),
-                    ))
+                    products.append(
+                        Product(
+                            platform=self.platform,
+                            title=it.get("raw_title", ""),
+                            price=float(it.get("view_price", -1) or -1),
+                            sales=_parse_sales_str(it.get("view_sales", it.get("view_sales_num", ""))),
+                            shop=it.get("nick", "淘宝"),
+                            shop_rating=float(it.get("shopcard", {}).get("slevel", -1) or -1),
+                            url=f"https://item.taobao.com/item.htm?id={it.get('nid', '')}",
+                            sku_id=str(it.get("nid", "")),
+                        )
+                    )
                 if products:
                     return products[:limit]
             except Exception as e:
@@ -190,16 +192,18 @@ class TaobaoScraper(BaseScraper):
                     if not title:
                         continue
                     price = it.get("price") or it.get("view_price") or -1
-                    products.append(Product(
-                        platform=self.platform,
-                        title=title,
-                        price=float(price) if price else -1.0,
-                        sales=_parse_sales_str(it.get("view_sales", it.get("sales", ""))),
-                        shop=it.get("shopName") or it.get("nick") or "淘宝",
-                        shop_rating=-1.0,
-                        url=it.get("url") or f"https://item.taobao.com/item.htm?id={it.get('nid','')}",
-                        sku_id=str(it.get("nid") or it.get("itemId") or ""),
-                    ))
+                    products.append(
+                        Product(
+                            platform=self.platform,
+                            title=title,
+                            price=float(price) if price else -1.0,
+                            sales=_parse_sales_str(it.get("view_sales", it.get("sales", ""))),
+                            shop=it.get("shopName") or it.get("nick") or "淘宝",
+                            shop_rating=-1.0,
+                            url=it.get("url") or f"https://item.taobao.com/item.htm?id={it.get('nid', '')}",
+                            sku_id=str(it.get("nid") or it.get("itemId") or ""),
+                        )
+                    )
                 if products:
                     return products[:limit]
             except Exception as e:
@@ -212,6 +216,7 @@ def _parse_sales_str(s) -> int:
     if not s:
         return -1
     from core.dedup import parse_sales
+
     return parse_sales(str(s))
 
 

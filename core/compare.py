@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 from core.models import Product
 
@@ -19,15 +18,17 @@ from core.models import Product
 @dataclass
 class Recommendation:
     """性价比推荐结果"""
+
     product: Product
-    score: float           # 综合得分 [0, 100]
-    rank: int             # 推荐名次
-    reason: str           # 推荐理由 (人类可读)
+    score: float  # 综合得分 [0, 100]
+    rank: int  # 推荐名次
+    reason: str  # 推荐理由 (人类可读)
 
 
 @dataclass
 class PlatformStats:
     """平台聚合统计"""
+
     platform: str
     count: int
     avg_price: float
@@ -38,7 +39,7 @@ class PlatformStats:
     avg_rating: float
 
 
-def _min_max(values: List[float]) -> tuple:
+def _min_max(values: list[float]) -> tuple:
     """返回 (min, max); 空列表返回 (0, 1) 避免除零"""
     if not values:
         return 0.0, 1.0
@@ -48,7 +49,7 @@ def _min_max(values: List[float]) -> tuple:
     return lo, hi
 
 
-def normalize(values: List[float], invert: bool = False) -> List[float]:
+def normalize(values: list[float], invert: bool = False) -> list[float]:
     """
     Min-Max 归一化到 [0, 1]
 
@@ -68,17 +69,17 @@ def normalize(values: List[float], invert: bool = False) -> List[float]:
 
 
 # 推荐理由判定阈值 (可配置)
-THRESHOLD_PRICE_LOW = 0.7      # 价格归一化 >= 此值视为 "价格处于低位"
-THRESHOLD_PRICE_MID = 0.4      # 价格归一化 >= 此值视为 "价格适中"
-THRESHOLD_SALES_HIGH = 0.6     # 销量归一化 >= 此值视为 "销量领先"
-THRESHOLD_RATING_HIGH = 0.7    # 评分归一化 >= 此值视为 "店铺评分高"
+THRESHOLD_PRICE_LOW = 0.7  # 价格归一化 >= 此值视为 "价格处于低位"
+THRESHOLD_PRICE_MID = 0.4  # 价格归一化 >= 此值视为 "价格适中"
+THRESHOLD_SALES_HIGH = 0.6  # 销量归一化 >= 此值视为 "销量领先"
+THRESHOLD_RATING_HIGH = 0.7  # 评分归一化 >= 此值视为 "店铺评分高"
 
 
 def compute_recommendations(
-    products: List[Product],
+    products: list[Product],
     top_n: int = 5,
-    weights: Optional[dict] = None,
-) -> List[Recommendation]:
+    weights: dict | None = None,
+) -> list[Recommendation]:
     """
     计算性价比推荐
 
@@ -108,41 +109,35 @@ def compute_recommendations(
     ratings = [p.shop_rating for p in valid_products]
 
     # 建立产品对象(id) -> 归一化值 的字典映射, 避免过滤后列表索引与原 products 不对应
-    price_map: Dict[int, float] = {}
+    # normalize 与 valid_products 一一对应，strict=True 显式声明该等长不变量
+    price_map: dict[int, float] = {}
     if prices:
-        for p, nv in zip(valid_products,
-                         normalize(prices, invert=True)):
+        for p, nv in zip(valid_products, normalize(prices, invert=True), strict=True):
             price_map[id(p)] = nv
 
-    sales_map: Dict[int, float] = {}
+    sales_map: dict[int, float] = {}
     if sales:
-        for p, nv in zip(valid_products,
-                         normalize(sales, invert=False)):
+        for p, nv in zip(valid_products, normalize(sales, invert=False), strict=True):
             sales_map[id(p)] = nv
 
-    rating_map: Dict[int, float] = {}
+    rating_map: dict[int, float] = {}
     if ratings:
-        for p, nv in zip(valid_products,
-                         normalize(ratings, invert=False)):
+        for p, nv in zip(valid_products, normalize(ratings, invert=False), strict=True):
             rating_map[id(p)] = nv
 
-    score_list: List[tuple] = []
+    score_list: list[tuple] = []
     for idx, p in enumerate(products):
         # 通过字典映射获取各维度归一化值, 缺失时默认 0.0
         p_score = price_map.get(id(p), 0.0)
         s_score = sales_map.get(id(p), 0.0)
         r_score = rating_map.get(id(p), 0.0)
 
-        total = (
-            p_score * w["price"]
-            + s_score * w["sales"]
-            + r_score * w["rating"]
-        ) * 100.0
+        total = (p_score * w["price"] + s_score * w["sales"] + r_score * w["rating"]) * 100.0
         score_list.append((idx, total, p_score, s_score, r_score))
 
     score_list.sort(key=lambda x: x[1], reverse=True)
 
-    recs: List[Recommendation] = []
+    recs: list[Recommendation] = []
     for rank, (idx, score, ps, ss, rs) in enumerate(score_list[:top_n], start=1):
         p = products[idx]
         # 生成推荐理由
@@ -157,14 +152,18 @@ def compute_recommendations(
             reasons.append("店铺评分高")
         if not reasons:
             reasons.append("综合表现均衡")
-        recs.append(Recommendation(
-            product=p, score=round(score, 2), rank=rank,
-            reason=" / ".join(reasons),
-        ))
+        recs.append(
+            Recommendation(
+                product=p,
+                score=round(score, 2),
+                rank=rank,
+                reason=" / ".join(reasons),
+            )
+        )
     return recs
 
 
-def platform_stats(products: List[Product], platform_names: Optional[dict] = None) -> List[PlatformStats]:
+def platform_stats(products: list[Product], platform_names: dict | None = None) -> list[PlatformStats]:
     """
     按平台聚合统计
 
@@ -176,11 +175,11 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
         各平台统计列表
     """
     platform_names = platform_names or {}
-    groups: Dict[str, List[Product]] = {}
+    groups: dict[str, list[Product]] = {}
     for p in products:
         groups.setdefault(p.platform, []).append(p)
 
-    result: List[PlatformStats] = []
+    result: list[PlatformStats] = []
     for plat, items in groups.items():
         prices = [it.price for it in items if it.price > 0]
         sales = [it.sales for it in items if it.sales >= 0]
@@ -190,20 +189,22 @@ def platform_stats(products: List[Product], platform_names: Optional[dict] = Non
         sorted_p = sorted(prices)
         n = len(sorted_p)
         median = sorted_p[n // 2] if n % 2 == 1 else (sorted_p[n // 2 - 1] + sorted_p[n // 2]) / 2
-        result.append(PlatformStats(
-            platform=platform_names.get(plat, plat),
-            count=len(prices),  # 只统计有效价格商品数量
-            avg_price=round(sum(prices) / len(prices), 2) if prices else 0.0,
-            min_price=min(prices) if prices else 0.0,
-            max_price=max(prices) if prices else 0.0,
-            median_price=round(median, 2),
-            avg_sales=int(sum(sales) / len(sales)) if sales and len(sales) > 0 else 0,
-            avg_rating=round(sum(ratings) / len(ratings), 2) if ratings and len(ratings) > 0 else 0.0,
-        ))
+        result.append(
+            PlatformStats(
+                platform=platform_names.get(plat, plat),
+                count=len(prices),  # 只统计有效价格商品数量
+                avg_price=round(sum(prices) / len(prices), 2) if prices else 0.0,
+                min_price=min(prices) if prices else 0.0,
+                max_price=max(prices) if prices else 0.0,
+                median_price=round(median, 2),
+                avg_sales=int(sum(sales) / len(sales)) if sales and len(sales) > 0 else 0,
+                avg_rating=round(sum(ratings) / len(ratings), 2) if ratings and len(ratings) > 0 else 0.0,
+            )
+        )
     return result
 
 
-def build_compare_table(products: List[Product]) -> List[dict]:
+def build_compare_table(products: list[Product]) -> list[dict]:
     """
     生成横向对比表格行 (供 CLI 富文本表格与 Web 表格共用)
 
@@ -212,21 +213,23 @@ def build_compare_table(products: List[Product]) -> List[dict]:
     """
     rows = []
     for p in products:
-        rows.append({
-            "platform": p.platform,
-            "title": p.title,
-            "price": p.price,
-            "sales": p.sales,
-            "shop": p.shop,
-            "shop_rating": p.shop_rating,
-            "url": p.url,
-            "image_url": p.image_url,
-            "url_hash": p.url_hash,
-        })
+        rows.append(
+            {
+                "platform": p.platform,
+                "title": p.title,
+                "price": p.price,
+                "sales": p.sales,
+                "shop": p.shop,
+                "shop_rating": p.shop_rating,
+                "url": p.url,
+                "image_url": p.image_url,
+                "url_hash": p.url_hash,
+            }
+        )
     return rows
 
 
-def cheapest_vs_most_expensive(products: List[Product]) -> dict:
+def cheapest_vs_most_expensive(products: list[Product]) -> dict:
     """
     找出最便宜与最贵的商品 (用于在结果摘要中突出展示)
 
@@ -236,8 +239,7 @@ def cheapest_vs_most_expensive(products: List[Product]) -> dict:
     """
     valid = [p for p in products if p.price > 0]
     if not valid:
-        return {"cheapest": None, "most_expensive": None,
-                "price_gap": 0.0, "price_gap_ratio": 0.0}
+        return {"cheapest": None, "most_expensive": None, "price_gap": 0.0, "price_gap_ratio": 0.0}
     cheapest = min(valid, key=lambda x: x.price)
     expensive = max(valid, key=lambda x: x.price)
     gap = expensive.price - cheapest.price

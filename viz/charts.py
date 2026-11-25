@@ -19,13 +19,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 from config import EXPORT_DIR
 from core.compare import PlatformStats
 from core.database import Database
 from core.models import Product
-
 
 logger = logging.getLogger("viz")
 
@@ -36,14 +34,21 @@ logger = logging.getLogger("viz")
 def _setup_chinese_font():
     """配置 matplotlib 中文字体"""
     import matplotlib
+
     matplotlib.use("Agg")  # 非交互后端
     import matplotlib.pyplot as plt
     from matplotlib import font_manager
 
     candidates = [
-        "Microsoft YaHei", "PingFang SC", "Heiti SC",
-        "Noto Sans CJK SC", "Source Han Sans SC",
-        "WenQuanYi Zen Hei", "SimHei", "STHeiti", "Arial Unicode MS",
+        "Microsoft YaHei",
+        "PingFang SC",
+        "Heiti SC",
+        "Noto Sans CJK SC",
+        "Source Han Sans SC",
+        "WenQuanYi Zen Hei",
+        "SimHei",
+        "STHeiti",
+        "Arial Unicode MS",
     ]
     available = {f.name for f in font_manager.fontManager.ttflist}
     for name in candidates:
@@ -64,9 +69,9 @@ _setup_chinese_font()
 # ---------------------------------------------------------------------------
 # 图表函数
 # ---------------------------------------------------------------------------
-def chart_platform_price_box(products: List[Product],
-                             platform_names: Optional[dict] = None,
-                             save_path: Optional[str] = None) -> str:
+def chart_platform_price_box(
+    products: list[Product], platform_names: dict | None = None, save_path: str | None = None
+) -> str:
     """
     平台价格对比箱线图
 
@@ -97,16 +102,19 @@ def chart_platform_price_box(products: List[Product],
     data = list(groups.values())
     # matplotlib 3.9+ 弃用 labels, 改用 tick_labels; 兼容旧版
     import matplotlib as _mpl
+
     _mpl_ver = tuple(int(x) for x in _mpl.__version__.split(".")[:2])
-    box_kwargs = {"patch_artist": True, "showmeans": True,
-                      "meanprops": {"marker": "D", "markerfacecolor": "red",
-                                    "markeredgecolor": "red", "markersize": 6}}
+    box_kwargs = {
+        "patch_artist": True,
+        "showmeans": True,
+        "meanprops": {"marker": "D", "markerfacecolor": "red", "markeredgecolor": "red", "markersize": 6},
+    }
     if _mpl_ver >= (3, 9):
         bp = ax.boxplot(data, tick_labels=labels, **box_kwargs)
     else:
         bp = ax.boxplot(data, labels=labels, **box_kwargs)
     colors = ["#FF6B6B", "#4ECDC4", "#FFD93D", "#A8DADC", "#F4A261"]
-    for patch, color in zip(bp["boxes"], colors[:len(bp["boxes"])], strict=True):
+    for patch, color in zip(bp["boxes"], colors[: len(bp["boxes"])], strict=True):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
 
@@ -118,9 +126,7 @@ def chart_platform_price_box(products: List[Product],
     return _save_or_show(fig, save_path, "box")
 
 
-def chart_price_distribution(products: List[Product],
-                             bins: int = 20,
-                             save_path: Optional[str] = None) -> str:
+def chart_price_distribution(products: list[Product], bins: int = 20, save_path: str | None = None) -> str:
     """
     商品价格分布柱状图
 
@@ -140,10 +146,10 @@ def chart_price_distribution(products: List[Product],
         return ""
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    _n, bins_arr, patches = ax.hist(prices, bins=bins, color="#4ECDC4",
-                                    edgecolor="white", alpha=0.8)
+    _n, bins_arr, patches = ax.hist(prices, bins=bins, color="#4ECDC4", edgecolor="white", alpha=0.8)
     # 颜色渐变 (低价绿 -> 高价红)
     from matplotlib import cm
+
     norm = plt.Normalize(min(prices), max(prices))
     for patch, left in zip(patches, bins_arr[:-1], strict=True):
         patch.set_facecolor(cm.RdYlGn_r(norm(left)))
@@ -161,8 +167,7 @@ def chart_price_distribution(products: List[Product],
     return _save_or_show(fig, save_path, "distribution")
 
 
-def chart_platform_avg(stats: List[PlatformStats],
-                       save_path: Optional[str] = None) -> str:
+def chart_platform_avg(stats: list[PlatformStats], save_path: str | None = None) -> str:
     """
     平台均价对比柱状图
 
@@ -186,6 +191,7 @@ def chart_platform_avg(stats: List[PlatformStats],
     max_prices = [s.max_price for s in stats]
 
     import numpy as np
+
     x = np.arange(len(names))
     width = 0.25
 
@@ -210,9 +216,9 @@ def chart_platform_avg(stats: List[PlatformStats],
     return _save_or_show(fig, save_path, "platform_avg")
 
 
-def chart_price_trend(db: Database, url_hash: str,
-                      title: str = "", days: int = 30,
-                      save_path: Optional[str] = None) -> str:
+def chart_price_trend(
+    db: Database, url_hash: str, title: str = "", days: int = 30, save_path: str | None = None
+) -> str:
     """
     单商品价格趋势折线图
 
@@ -237,45 +243,64 @@ def chart_price_trend(db: Database, url_hash: str,
     prices = [t[1] for t in trend]
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(dates, prices, marker="o", color="#FF6B6B",
-            linewidth=2, markersize=8, markerfacecolor="white",
-            markeredgecolor="#FF6B6B", markeredgewidth=2)
+    ax.plot(
+        dates,
+        prices,
+        marker="o",
+        color="#FF6B6B",
+        linewidth=2,
+        markersize=8,
+        markerfacecolor="white",
+        markeredgecolor="#FF6B6B",
+        markeredgewidth=2,
+    )
 
     # 填充
-    ax.fill_between(range(len(prices)), prices, min(prices) - 1,
-                    color="#FF6B6B", alpha=0.15)
+    ax.fill_between(range(len(prices)), prices, min(prices) - 1, color="#FF6B6B", alpha=0.15)
 
     ax.set_title(f"价格趋势 - {title[:30]} (近{days}天)", fontsize=14, fontweight="bold")
     ax.set_ylabel("价格 (元)", fontsize=12)
     ax.set_xlabel("日期", fontsize=12)
     ax.grid(True, alpha=0.3)
     ax.set_xticks(range(0, len(dates), max(1, len(dates) // 8)))
-    ax.set_xticklabels(dates[::max(1, len(dates) // 8)], rotation=30, ha="right")
+    ax.set_xticklabels(dates[:: max(1, len(dates) // 8)], rotation=30, ha="right")
 
     # 极值标注
     min_idx = prices.index(min(prices))
     max_idx = prices.index(max(prices))
-    ax.annotate(f"最低 ¥{prices[min_idx]:.2f}", xy=(min_idx, prices[min_idx]),
-                xytext=(min_idx, prices[min_idx] - (max(prices) - min(prices)) * 0.3),
-                arrowprops={"arrowstyle": "->", "color": "green"},
-                fontsize=10, color="green", fontweight="bold")
-    ax.annotate(f"最高 ¥{prices[max_idx]:.2f}", xy=(max_idx, prices[max_idx]),
-                xytext=(max_idx, prices[max_idx] + (max(prices) - min(prices)) * 0.2),
-                arrowprops={"arrowstyle": "->", "color": "red"},
-                fontsize=10, color="red", fontweight="bold")
+    ax.annotate(
+        f"最低 ¥{prices[min_idx]:.2f}",
+        xy=(min_idx, prices[min_idx]),
+        xytext=(min_idx, prices[min_idx] - (max(prices) - min(prices)) * 0.3),
+        arrowprops={"arrowstyle": "->", "color": "green"},
+        fontsize=10,
+        color="green",
+        fontweight="bold",
+    )
+    ax.annotate(
+        f"最高 ¥{prices[max_idx]:.2f}",
+        xy=(max_idx, prices[max_idx]),
+        xytext=(max_idx, prices[max_idx] + (max(prices) - min(prices)) * 0.2),
+        arrowprops={"arrowstyle": "->", "color": "red"},
+        fontsize=10,
+        color="red",
+        fontweight="bold",
+    )
 
     plt.tight_layout()
     return _save_or_show(fig, save_path, f"trend_{url_hash}")
 
 
-def _save_or_show(fig, save_path: Optional[str], prefix: str) -> str:
+def _save_or_show(fig, save_path: str | None, prefix: str) -> str:
     """保存图表到文件, 返回路径"""
     import time as _t
+
     if save_path is None:
         save_path = str(EXPORT_DIR / f"{prefix}_{int(_t.time())}.png")
     Path(save_path).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(save_path, dpi=120, bbox_inches="tight", facecolor="white")
     import matplotlib.pyplot as plt
+
     plt.close(fig)
     logger.info("图表已保存: %s", save_path)
     return save_path

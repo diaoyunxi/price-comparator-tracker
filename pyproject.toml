@@ -5,6 +5,13 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "S", "PLE", "UP", "RUF"]
 ignore = ["S101", "B008", "E501"]
+# 中文注释/文案里刻意使用的全角标点，声明为非仿冒字符（消除 RUF001/002/003 误报）
+allowed-confusables = ["（", "）", "，", "：", "；"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106"]
+# mock 抓取器用 random 造假商品数据，不涉及任何安全用途（S311 为密码学告警，此处为误报）
+"scrapers/mock.py" = ["S311"]
+# 安装/自更新脚本只调用 sys.executable、本机 git 与固定 GitHub API 地址，输入均来自项目内部
+"install.py" = ["S603"]
+"updater.py" = ["S603", "S310"]

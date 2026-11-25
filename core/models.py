@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import List
 
 
 def _norm_title(s: str) -> str:
@@ -38,6 +37,7 @@ class Product:
         image_url: 主图链接 (可选)
         sku_id: 平台 SKU ID (可选, 用于趋势聚合)
     """
+
     platform: str
     title: str
     price: float = -1.0
@@ -73,7 +73,7 @@ class Product:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Product":
+    def from_dict(cls, d: dict) -> Product:
         return cls(
             platform=d.get("platform", ""),
             title=d.get("title", ""),
@@ -101,9 +101,10 @@ class CrawlResult:
         error: 错误信息 (成功时为空)
         elapsed: 耗时 (秒)
     """
+
     keyword: str
     platform: str
-    products: List[Product] = field(default_factory=list)
+    products: list[Product] = field(default_factory=list)
     used_mock: bool = False
     error: str = ""
     elapsed: float = 0.0

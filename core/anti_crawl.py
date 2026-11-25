@@ -19,11 +19,11 @@
 
 from __future__ import annotations
 
+import logging
 import random
 import time
-import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -37,7 +37,7 @@ logger = logging.getLogger("anti_crawl")
 # ---------------------------------------------------------------------------
 # User-Agent 池
 # ---------------------------------------------------------------------------
-USER_AGENTS: List[str] = [
+USER_AGENTS: list[str] = [
     # 桌面 Chrome
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -74,7 +74,7 @@ def random_ua() -> str:
 # ---------------------------------------------------------------------------
 # 平台对应的默认请求头
 # ---------------------------------------------------------------------------
-def default_headers(platform: str, referer: Optional[str] = None) -> Dict[str, str]:
+def default_headers(platform: str, referer: str | None = None) -> dict[str, str]:
     """
     根据平台生成默认请求头
 
@@ -121,8 +121,8 @@ class ProxyPool:
     文件格式: 每行一个代理, 如 http://1.2.3.4:8080
     """
 
-    def __init__(self, file_path: Optional[str] = None) -> None:
-        self.proxies: List[str] = []
+    def __init__(self, file_path: str | None = None) -> None:
+        self.proxies: list[str] = []
         self._idx = 0
         if file_path:
             self.load(file_path)
@@ -130,7 +130,7 @@ class ProxyPool:
     def load(self, file_path: str) -> int:
         """从文件加载代理列表, 返回加载数量"""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 for raw_line in f:
                     line = raw_line.strip()
                     if line and not line.startswith("#"):
@@ -140,7 +140,7 @@ class ProxyPool:
             logger.warning("代理池文件不存在: %s", file_path)
         return len(self.proxies)
 
-    def get(self) -> Optional[str]:
+    def get(self) -> str | None:
         """获取下一个代理 (轮询)"""
         if not self.proxies:
             return None
@@ -166,9 +166,10 @@ class CookiePool:
 
     def __init__(self, dir_path: str) -> None:
         from pathlib import Path
+
         self.dir = Path(dir_path)
         self.dir.mkdir(parents=True, exist_ok=True)
-        self._cache: Dict[str, str] = {}
+        self._cache: dict[str, str] = {}
 
     def get(self, platform: str) -> str:
         """获取平台 Cookie"""
@@ -188,6 +189,7 @@ class CookiePool:
 @dataclass
 class RequestResult:
     """请求结果"""
+
     success: bool
     status_code: int = 0
     text: str = ""
@@ -196,7 +198,7 @@ class RequestResult:
     elapsed: float = 0.0
     retries: int = 0
     error: str = ""
-    used_proxy: Optional[str] = None
+    used_proxy: str | None = None
     used_playwright: bool = False
 
 
@@ -205,7 +207,7 @@ class AntiCrawlSession:
     反爬会话: 封装 requests.Session + 重试 + 代理 + 退避 + playwright 降级
     """
 
-    def __init__(self, cfg: Optional[CrawlConfig] = None) -> None:
+    def __init__(self, cfg: CrawlConfig | None = None) -> None:
         self.cfg = cfg or get_config().crawl
         self.session = requests.Session()
         # urllib3 级别重试 (连接错误时)
@@ -223,14 +225,20 @@ class AntiCrawlSession:
         self.cookie_pool = CookiePool(self.cfg.cookie_dir) if self.cfg.enable_cookie_pool else None
 
         # 验证码识别 hook (用户可注入自定义识别函数)
-        self.captcha_solver: Optional[Callable[[bytes], str]] = None
+        self.captcha_solver: Callable[[bytes], str] | None = None
 
     # ------------------------------------------------------------------
     # 公共 API
     # ------------------------------------------------------------------
-    def get(self, url: str, platform: str = "", referer: Optional[str] = None,
-            extra_headers: Optional[dict] = None, params: Optional[dict] = None,
-            timeout: Optional[int] = None) -> RequestResult:
+    def get(
+        self,
+        url: str,
+        platform: str = "",
+        referer: str | None = None,
+        extra_headers: dict | None = None,
+        params: dict | None = None,
+        timeout: int | None = None,
+    ) -> RequestResult:
         """
         发起 GET 请求, 自动反爬
 
@@ -245,23 +253,38 @@ class AntiCrawlSession:
         Returns:
             RequestResult
         """
-        return self._request("GET", url, platform, referer, extra_headers,
-                            params=params, timeout=timeout)
+        return self._request("GET", url, platform, referer, extra_headers, params=params, timeout=timeout)
 
-    def post(self, url: str, platform: str = "", referer: Optional[str] = None,
-             extra_headers: Optional[dict] = None, json_body: Optional[dict] = None,
-             data: Optional[dict] = None, timeout: Optional[int] = None) -> RequestResult:
+    def post(
+        self,
+        url: str,
+        platform: str = "",
+        referer: str | None = None,
+        extra_headers: dict | None = None,
+        json_body: dict | None = None,
+        data: dict | None = None,
+        timeout: int | None = None,
+    ) -> RequestResult:
         """发起 POST 请求, 自动反爬"""
-        return self._request("POST", url, platform, referer, extra_headers,
-                            json_body=json_body, data=data, timeout=timeout)
+        return self._request(
+            "POST", url, platform, referer, extra_headers, json_body=json_body, data=data, timeout=timeout
+        )
 
     # ------------------------------------------------------------------
     # 内部实现
     # ------------------------------------------------------------------
-    def _request(self, method: str, url: str, platform: str,
-                 referer: Optional[str], extra_headers: Optional[dict],
-                 params: Optional[dict] = None, json_body: Optional[dict] = None,
-                 data: Optional[dict] = None, timeout: Optional[int] = None) -> RequestResult:
+    def _request(
+        self,
+        method: str,
+        url: str,
+        platform: str,
+        referer: str | None,
+        extra_headers: dict | None,
+        params: dict | None = None,
+        json_body: dict | None = None,
+        data: dict | None = None,
+        timeout: int | None = None,
+    ) -> RequestResult:
         timeout = timeout or self.cfg.request_timeout
         start = time.time()
         result = RequestResult(success=False, url=url, elapsed=0.0)
@@ -318,15 +341,13 @@ class AntiCrawlSession:
                     # 反爬拒绝, 退避后重试 + 换 UA
                     headers["User-Agent"] = random_ua()
                     last_error = f"http_{resp.status_code}"
-                    logger.warning("[%s] 第 %d 次请求被拒 (%d): %s", platform, attempt,
-                                  resp.status_code, url)
+                    logger.warning("[%s] 第 %d 次请求被拒 (%d): %s", platform, attempt, resp.status_code, url)
                     self._backoff(attempt)
                     continue
                 # 5xx 服务端错误, 纳入重试逻辑 (退避后重试)
                 if 500 <= resp.status_code < 600:
                     last_error = f"http_{resp.status_code}"
-                    logger.warning("[%s] 第 %d 次请求服务端错误 (%d): %s",
-                                   platform, attempt, resp.status_code, url)
+                    logger.warning("[%s] 第 %d 次请求服务端错误 (%d): %s", platform, attempt, resp.status_code, url)
                     if attempt < self.cfg.max_retries:
                         self._backoff(attempt)
                         continue
@@ -346,8 +367,7 @@ class AntiCrawlSession:
 
         # 4. requests 失败 -> playwright 降级
         if not result.success and self.cfg.enable_playwright_fallback:
-            pw_result = self._playwright_fallback(method, url, platform, headers,
-                                                  params, json_body, data, timeout)
+            pw_result = self._playwright_fallback(method, url, platform, headers, params, json_body, data, timeout)
             if pw_result.success:
                 pw_result.retries = result.retries
                 pw_result.used_playwright = True
@@ -368,8 +388,7 @@ class AntiCrawlSession:
         if resp.status_code in (403, 412):
             return True
         text = resp.text or ""
-        keywords = ["阿里云验证", "滑动验证", "人机验证", "captcha",
-                    "验证码", "_nc_session", "punish", "x5sec"]
+        keywords = ["阿里云验证", "滑动验证", "人机验证", "captcha", "验证码", "_nc_session", "punish", "x5sec"]
         return any(k in text for k in keywords)
 
     def _try_solve_captcha(self, content: bytes, platform: str) -> bool:
@@ -386,10 +405,17 @@ class AntiCrawlSession:
             logger.warning("验证码识别异常: %s", e)
             return False
 
-    def _playwright_fallback(self, method: str, url: str, platform: str,
-                            headers: dict, params: Optional[dict],
-                            json_body: Optional[dict], data: Optional[dict],
-                            timeout: int) -> RequestResult:
+    def _playwright_fallback(
+        self,
+        method: str,
+        url: str,
+        platform: str,
+        headers: dict,
+        params: dict | None,
+        json_body: dict | None,
+        data: dict | None,
+        timeout: int,
+    ) -> RequestResult:
         """
         使用 playwright headless 浏览器降级请求
 
@@ -405,27 +431,28 @@ class AntiCrawlSession:
         start = time.time()
         try:
             with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True, args=[
-                    "--no-sandbox", "--disable-setuid-sandbox",
-                    "--disable-blink-features=AutomationControlled",
-                ])
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=[
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-blink-features=AutomationControlled",
+                    ],
+                )
                 context = browser.new_context(
                     user_agent=headers.get("User-Agent", random_ua()),
                     locale="zh-CN",
                     viewport={"width": 1280, "height": 800},
                 )
                 # 注入反检测脚本
-                context.add_init_script(
-                    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
-                )
+                context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
                 page = context.new_page()
                 if method == "GET":
                     resp = page.goto(url, wait_until="networkidle", timeout=timeout * 1000)
                 else:
                     # POST 降级: 保留完整 URL (含查询参数), 直接使用 API 请求
                     full_url = url  # 保留完整 URL 不截断查询参数
-                    resp = page.request.post(full_url, headers=headers,
-                                             data=json_body or data or {})
+                    resp = page.request.post(full_url, headers=headers, data=json_body or data or {})
                 if resp is None:
                     result.error = "playwright_no_response"
                     return result

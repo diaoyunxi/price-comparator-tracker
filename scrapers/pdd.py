@@ -15,14 +15,12 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import List
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
 from core.models import Product
 from scrapers.base import BaseScraper
-
 
 logger = logging.getLogger("scraper.pdd")
 
@@ -33,7 +31,7 @@ class PddScraper(BaseScraper):
     platform = "pdd"
     platform_name = "拼多多"
 
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         拼多多搜索: 优先移动端 H5
 
@@ -46,8 +44,7 @@ class PddScraper(BaseScraper):
         """
         # 1. 移动端搜索页 (HTML)
         url = f"https://mobile.yangkeduo.com/search_result.html?search_key={quote(keyword)}"
-        result = self.session.get(url, platform="pdd",
-                                 referer="https://mobile.yangkeduo.com/")
+        result = self.session.get(url, platform="pdd", referer="https://mobile.yangkeduo.com/")
         self._sleep()
         if result.success:
             products = self._parse_mobile_h5(result.text, keyword, limit)
@@ -66,9 +63,7 @@ class PddScraper(BaseScraper):
             "size": limit,
             "sort": "default",
         }
-        result2 = self.session.get(api_url, platform="pdd",
-                                   referer="https://mobile.yangkeduo.com/",
-                                   params=params)
+        result2 = self.session.get(api_url, platform="pdd", referer="https://mobile.yangkeduo.com/", params=params)
         self._sleep()
         if result2.success:
             products = self._parse_api_json(result2.text, keyword, limit)
@@ -80,9 +75,9 @@ class PddScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """解析移动端 H5 搜索结果"""
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -91,8 +86,7 @@ class PddScraper(BaseScraper):
         # 拼多多 H5 商品卡片常见类名
         items = soup.select("div[data-goods-id], div.goods-item, li.item, div.r-search-item")
         if not items:
-            items = soup.find_all(["div", "li"],
-                                 class_=re.compile(r"(goods|item|product|search)", re.IGNORECASE))
+            items = soup.find_all(["div", "li"], class_=re.compile(r"(goods|item|product|search)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -107,6 +101,7 @@ class PddScraper(BaseScraper):
                 price_el = el.select_one(".price, .r-price, [class*=price]")
                 if price_el:
                     from core.dedup import parse_price
+
                     price = parse_price(price_el.get_text(strip=True))
                 # 链接
                 url = ""
@@ -117,23 +112,36 @@ class PddScraper(BaseScraper):
                     if link:
                         href = link.get("href", "")
                         if href and not href.startswith("javascript"):
-                            url = href if href.startswith("http") else f"https:{href}" if href.startswith("//") else f"https://mobile.yangkeduo.com{href}"
+                            url = (
+                                href
+                                if href.startswith("http")
+                                else f"https:{href}"
+                                if href.startswith("//")
+                                else f"https://mobile.yangkeduo.com{href}"
+                            )
                 # 销量
                 sales = -1
                 sales_el = el.select_one(".sales, .r-sales, [class*=sale]")
                 if sales_el:
                     from core.dedup import parse_sales
+
                     sales = parse_sales(sales_el.get_text(strip=True))
                 # 店铺
                 shop_el = el.select_one(".mall, .shop, .store, [class*=shop]")
                 shop = shop_el.get_text(strip=True) if shop_el else "拼多多商家"
 
-                products.append(Product(
-                    platform=self.platform,
-                    title=title, price=price, sales=sales,
-                    shop=shop, shop_rating=-1.0,
-                    url=url, sku_id=str(goods_id),
-                ))
+                products.append(
+                    Product(
+                        platform=self.platform,
+                        title=title,
+                        price=price,
+                        sales=sales,
+                        shop=shop,
+                        shop_rating=-1.0,
+                        url=url,
+                        sku_id=str(goods_id),
+                    )
+                )
                 if len(products) >= limit:
                     break
             except Exception as e:
@@ -141,12 +149,11 @@ class PddScraper(BaseScraper):
                 continue
         return products
 
-    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _extract_embedded_json(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """从 HTML 中提取嵌入的 JSON 数据"""
-        products: List[Product] = []
+        products: list[Product] = []
         # 拼多多常把数据放在 window.__INITIAL_STATE__ 中
-        m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*;?\s*</script>",
-                     html, re.DOTALL)
+        m = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*?\})\s*;?\s*</script>", html, re.DOTALL)
         if m:
             try:
                 data = json.loads(m.group(1))
@@ -161,25 +168,27 @@ class PddScraper(BaseScraper):
                     price = it.get("price") or it.get("minPrice") or -1
                     sales = it.get("sales") or it.get("salesTip") or -1
                     goods_id = str(it.get("goodsId") or it.get("id") or "")
-                    products.append(Product(
-                        platform=self.platform,
-                        title=title,
-                        price=float(price) if price else -1.0,
-                        sales=int(sales) if isinstance(sales, int) else _parse_sales_str(sales),
-                        shop=it.get("mallName") or "拼多多商家",
-                        shop_rating=-1.0,
-                        url=f"https://mobile.yangkeduo.com/goods.html?goods_id={goods_id}" if goods_id else "",
-                        sku_id=goods_id,
-                    ))
+                    products.append(
+                        Product(
+                            platform=self.platform,
+                            title=title,
+                            price=float(price) if price else -1.0,
+                            sales=int(sales) if isinstance(sales, int) else _parse_sales_str(sales),
+                            shop=it.get("mallName") or "拼多多商家",
+                            shop_rating=-1.0,
+                            url=f"https://mobile.yangkeduo.com/goods.html?goods_id={goods_id}" if goods_id else "",
+                            sku_id=goods_id,
+                        )
+                    )
                 if products:
                     return products[:limit]
             except Exception as e:
                 logger.debug("[%s] __INITIAL_STATE__ 解析失败: %s", self.platform, e)
         return products
 
-    def _parse_api_json(self, text: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_api_json(self, text: str, keyword: str, limit: int = 30) -> list[Product]:
         """解析 API JSON 响应"""
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             data = json.loads(text)
         except Exception as e:
@@ -212,16 +221,18 @@ class PddScraper(BaseScraper):
                 if isinstance(price, (int, float)) and price > 0 and price >= 10000 and price == int(price):
                     price = price / 100
                 goods_id = str(it.get("goodsId") or it.get("goods_id") or "")
-                products.append(Product(
-                    platform=self.platform,
-                    title=title,
-                    price=float(price) if price else -1.0,
-                    sales=_parse_sales_str(it.get("sales") or it.get("salesTip") or ""),
-                    shop=it.get("mallName") or it.get("mall_name") or "拼多多商家",
-                    shop_rating=-1.0,
-                    url=f"https://mobile.yangkeduo.com/goods.html?goods_id={goods_id}" if goods_id else "",
-                    sku_id=goods_id,
-                ))
+                products.append(
+                    Product(
+                        platform=self.platform,
+                        title=title,
+                        price=float(price) if price else -1.0,
+                        sales=_parse_sales_str(it.get("sales") or it.get("salesTip") or ""),
+                        shop=it.get("mallName") or it.get("mall_name") or "拼多多商家",
+                        shop_rating=-1.0,
+                        url=f"https://mobile.yangkeduo.com/goods.html?goods_id={goods_id}" if goods_id else "",
+                        sku_id=goods_id,
+                    )
+                )
                 if len(products) >= limit:
                     break
             except Exception as e:
@@ -237,6 +248,7 @@ def _parse_sales_str(s) -> int:
     if isinstance(s, (int, float)):
         return int(s)
     from core.dedup import parse_sales
+
     return parse_sales(str(s))
 
 
@@ -246,8 +258,7 @@ def _find_goods_list(data, depth=0):
         return []
     if isinstance(data, list) and data and isinstance(data[0], dict):
         # 启发式: 元素包含 goodsName / goodsId / title 之一
-        if any("goodsName" in x or "goodsId" in x or "goods_name" in x
-               for x in data[:3] if isinstance(x, dict)):
+        if any("goodsName" in x or "goodsId" in x or "goods_name" in x for x in data[:3] if isinstance(x, dict)):
             return data
         return []
     if isinstance(data, dict):

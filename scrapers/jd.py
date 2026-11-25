@@ -15,7 +15,6 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import List
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
@@ -23,7 +22,6 @@ from bs4 import BeautifulSoup
 from core.dedup import parse_price, parse_sales
 from core.models import Product
 from scrapers.base import BaseScraper
-
 
 logger = logging.getLogger("scraper.jd")
 
@@ -34,7 +32,7 @@ class JDScraper(BaseScraper):
     platform = "jd"
     platform_name = "京东"
 
-    def _do_search(self, keyword: str, limit: int) -> List[Product]:
+    def _do_search(self, keyword: str, limit: int) -> list[Product]:
         """
         京东搜索: 优先移动端 H5
 
@@ -47,8 +45,7 @@ class JDScraper(BaseScraper):
         """
         # 1. 移动端 H5 搜索页
         url = f"https://so.m.jd.com/ware/search.action?keyword={quote(keyword)}&page=1"
-        result = self.session.get(url, platform="jd",
-                                 referer="https://so.m.jd.com/")
+        result = self.session.get(url, platform="jd", referer="https://so.m.jd.com/")
         self._sleep()
         if result.success:
             products = self._parse_mobile_h5(result.text, keyword, limit)
@@ -58,8 +55,7 @@ class JDScraper(BaseScraper):
         # 2. 尝试 PC 端 (JSON 接口, 多数情况下未登录会被拦截)
         logger.debug("[%s] 移动端无结果, 尝试 PC 端", self.platform)
         url2 = f"https://search.jd.com/Search?keyword={quote(keyword)}&enc=utf-8"
-        result2 = self.session.get(url2, platform="jd",
-                                  referer="https://www.jd.com/")
+        result2 = self.session.get(url2, platform="jd", referer="https://www.jd.com/")
         self._sleep()
         if result2.success:
             products = self._parse_pc(result2.text, keyword, limit)
@@ -71,7 +67,7 @@ class JDScraper(BaseScraper):
     # ------------------------------------------------------------------
     # 解析逻辑
     # ------------------------------------------------------------------
-    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_mobile_h5(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """
         解析移动端 H5 搜索结果
 
@@ -85,7 +81,7 @@ class JDScraper(BaseScraper):
             logger.debug("[%s] 页面内容过短 (%d bytes)，可能为空结果或被反爬拦截", self.platform, len(html or ""))
             return []
 
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -95,8 +91,7 @@ class JDScraper(BaseScraper):
         items = soup.select("li.search_item, div.goods_item, li.gl-item, div.search_item")
         if not items:
             # 退化: 通用提取所有带价格的卡片
-            items = soup.find_all(["li", "div"],
-                                 class_=re.compile(r"(item|goods|product)", re.IGNORECASE))
+            items = soup.find_all(["li", "div"], class_=re.compile(r"(item|goods|product)", re.IGNORECASE))
 
         for el in items:
             try:
@@ -116,7 +111,13 @@ class JDScraper(BaseScraper):
                 if link:
                     href = link.get("href", "")
                     if href and not href.startswith("javascript"):
-                        url = href if href.startswith("http") else f"https:{href}" if href.startswith("//") else f"https://so.m.jd.com{href}"
+                        url = (
+                            href
+                            if href.startswith("http")
+                            else f"https:{href}"
+                            if href.startswith("//")
+                            else f"https://so.m.jd.com{href}"
+                        )
                 # SKU ID
                 sku_id = ""
                 m = re.search(r"product/(\d+)", url)
@@ -130,16 +131,18 @@ class JDScraper(BaseScraper):
                 shop_el = el.select_one(".search_shop, .shop, .store")
                 shop = shop_el.get_text(strip=True) if shop_el else "京东自营"
 
-                products.append(Product(
-                    platform=self.platform,
-                    title=title,
-                    price=price,
-                    sales=sales,
-                    shop=shop,
-                    shop_rating=-1.0,
-                    url=url,
-                    sku_id=sku_id,
-                ))
+                products.append(
+                    Product(
+                        platform=self.platform,
+                        title=title,
+                        price=price,
+                        sales=sales,
+                        shop=shop,
+                        shop_rating=-1.0,
+                        url=url,
+                        sku_id=sku_id,
+                    )
+                )
                 if len(products) >= limit:
                     break
             except Exception as e:
@@ -147,7 +150,7 @@ class JDScraper(BaseScraper):
                 continue
         return products
 
-    def _parse_pc(self, html: str, keyword: str, limit: int = 30) -> List[Product]:
+    def _parse_pc(self, html: str, keyword: str, limit: int = 30) -> list[Product]:
         """
         解析 PC 端搜索结果页 (备用)
 
@@ -158,7 +161,7 @@ class JDScraper(BaseScraper):
             logger.debug("[%s] 页面内容过短 (%d bytes)，可能为空结果或被反爬拦截", self.platform, len(html or ""))
             return []
 
-        products: List[Product] = []
+        products: list[Product] = []
         try:
             soup = BeautifulSoup(html, "lxml")
         except Exception:
@@ -174,8 +177,8 @@ class JDScraper(BaseScraper):
                     data = json.loads(m.group(1))
                     for it in data:
                         products.append(self._item_from_pc_json(it))
-                except Exception:
-                    pass  # TODO: add proper error handling
+                except Exception as exc:
+                    logger.debug("解析 searchInfo JSON 失败: %s", exc)
                 if products:
                     return products[:limit]
 
@@ -207,12 +210,18 @@ class JDScraper(BaseScraper):
                         sku_id = m.group(1)
                 shop_el = el.select_one(".p-shop a, .p-shop")
                 shop = shop_el.get_text(strip=True) if shop_el else "京东"
-                products.append(Product(
-                    platform=self.platform,
-                    title=title, price=price, sales=-1,
-                    shop=shop, shop_rating=-1.0,
-                    url=url, sku_id=sku_id,
-                ))
+                products.append(
+                    Product(
+                        platform=self.platform,
+                        title=title,
+                        price=price,
+                        sales=-1,
+                        shop=shop,
+                        shop_rating=-1.0,
+                        url=url,
+                        sku_id=sku_id,
+                    )
+                )
                 if len(products) >= limit:
                     break
             except Exception:  # noqa: S112 - individual product parse failure is non-fatal
@@ -233,7 +242,7 @@ class JDScraper(BaseScraper):
             sales=int(it.get("commentcount", -1) or -1),
             shop=it.get("shop_name", "京东"),
             shop_rating=-1.0,
-            url=f"https://item.jd.com/{it.get('sku_id','')}.html",
+            url=f"https://item.jd.com/{it.get('sku_id', '')}.html",
             sku_id=str(it.get("sku_id", "")),
         )
 

@@ -15,8 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import SAMPLE_PRODUCTS, SAMPLE_RESULT, get_config
 from core.compare import (
-    cheapest_vs_most_expensive, compute_recommendations,
-    platform_stats, build_compare_table,
+    build_compare_table,
+    cheapest_vs_most_expensive,
+    compute_recommendations,
+    platform_stats,
 )
 from core.dedup import clean_products
 from core.models import Product
@@ -43,17 +45,25 @@ def generate() -> dict:
         "products": [p.to_dict() for p in cleaned],
         "platform_stats": [
             {
-                "platform": s.platform, "count": s.count,
-                "avg_price": s.avg_price, "min_price": s.min_price,
-                "max_price": s.max_price, "median_price": s.median_price,
-                "avg_sales": s.avg_sales, "avg_rating": s.avg_rating,
-            } for s in platform_stats(cleaned, cfg.platforms)
+                "platform": s.platform,
+                "count": s.count,
+                "avg_price": s.avg_price,
+                "min_price": s.min_price,
+                "max_price": s.max_price,
+                "median_price": s.median_price,
+                "avg_sales": s.avg_sales,
+                "avg_rating": s.avg_rating,
+            }
+            for s in platform_stats(cleaned, cfg.platforms)
         ],
         "recommendations": [
             {
-                "rank": r.rank, "score": r.score, "reason": r.reason,
+                "rank": r.rank,
+                "score": r.score,
+                "reason": r.reason,
                 "product": r.product.to_dict(),
-            } for r in compute_recommendations(cleaned, cfg.recommend_top_n)
+            }
+            for r in compute_recommendations(cleaned, cfg.recommend_top_n)
         ],
         "compare_table": build_compare_table(cleaned),
         "cheapest": gap_info["cheapest"].to_dict() if gap_info["cheapest"] else None,

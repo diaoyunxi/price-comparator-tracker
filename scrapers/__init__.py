@@ -1,10 +1,10 @@
 """爬虫模块包: base / jd / taobao / pdd / mock(回退)"""
 
 from scrapers.base import BaseScraper
-from scrapers.mock import MockScraper
 from scrapers.jd import JDScraper
-from scrapers.taobao import TaobaoScraper
+from scrapers.mock import MockScraper
 from scrapers.pdd import PddScraper
+from scrapers.taobao import TaobaoScraper
 
 
 def get_scraper(platform: str):

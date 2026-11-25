@@ -27,7 +27,6 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -40,7 +39,6 @@ from pydantic import BaseModel
 from config import PROJECT_ROOT, SAMPLE_PRODUCTS, SAMPLE_RESULT, get_config, read_version
 from core.database import Database
 from core.runner import run_crawl
-
 
 # ---------------------------------------------------------------------------
 # 日志
@@ -80,13 +78,12 @@ class TaskStore:
     TASK_RETENTION_SECONDS: int = 3600  # 1 小时
 
     def __init__(self) -> None:
-        self.tasks: Dict[str, dict] = {}
+        self.tasks: dict[str, dict] = {}
         self._lock = asyncio.Lock()
         # 保存后台任务引用，避免 "Task exception was never retrieved" 警告
-        self._bg_tasks: Dict[str, asyncio.Task] = {}
+        self._bg_tasks: dict[str, asyncio.Task] = {}
 
-    async def create(self, keyword: str, platforms: list, limit: int,
-                     use_mock: bool) -> str:
+    async def create(self, keyword: str, platforms: list, limit: int, use_mock: bool) -> str:
         task_id = uuid.uuid4().hex[:12]
         self.tasks[task_id] = {
             "task_id": task_id,
@@ -107,7 +104,7 @@ class TaskStore:
         if task_id in self.tasks:
             self.tasks[task_id].update(fields)
 
-    def get(self, task_id: str) -> Optional[dict]:
+    def get(self, task_id: str) -> dict | None:
         return self.tasks.get(task_id)
 
     async def cleanup(self) -> int:
@@ -186,28 +183,31 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         # 序列化结果
         result_dict = result.to_dict()
         # 处理 Product / Recommendation 嵌套
-        result_dict["products"] = [p.to_dict() if hasattr(p, "to_dict") else p
-                                    for p in result.products]
+        result_dict["products"] = [p.to_dict() if hasattr(p, "to_dict") else p for p in result.products]
         result_dict["recommendations"] = [
-            {"rank": r.rank, "score": r.score, "reason": r.reason,
-                          "product": r.product.to_dict()}
+            {"rank": r.rank, "score": r.score, "reason": r.reason, "product": r.product.to_dict()}
             for r in result.recommendations
         ]
         result_dict["platform_stats"] = [
             {
-                "platform": s.platform, "count": s.count,
-                "avg_price": s.avg_price, "min_price": s.min_price,
-                "max_price": s.max_price, "median_price": s.median_price,
-                "avg_sales": s.avg_sales, "avg_rating": s.avg_rating,
-            } for s in result.platform_stats
+                "platform": s.platform,
+                "count": s.count,
+                "avg_price": s.avg_price,
+                "min_price": s.min_price,
+                "max_price": s.max_price,
+                "median_price": s.median_price,
+                "avg_sales": s.avg_sales,
+                "avg_rating": s.avg_rating,
+            }
+            for s in result.platform_stats
         ]
         result_dict["cheapest"] = result.cheapest.to_dict() if result.cheapest else None
-        result_dict["most_expensive"] = (result.most_expensive.to_dict()
-                                          if result.most_expensive else None)
+        result_dict["most_expensive"] = result.most_expensive.to_dict() if result.most_expensive else None
 
         await tasks_store.update(
             task_id,
-            status="success", progress=100,
+            status="success",
+            progress=100,
             finished_at=time.time(),
             result=result_dict,
         )
@@ -216,7 +216,8 @@ async def _run_crawl_task(task_id: str, req: CrawlRequest) -> None:
         logger.exception("任务失败: %s", task_id)
         await tasks_store.update(
             task_id,
-            status="failed", finished_at=time.time(),
+            status="failed",
+            finished_at=time.time(),
             error=f"task_failed:{type(e).__name__}",
         )
 
@@ -233,16 +234,20 @@ async def index(request: Request):
     try:
         # 优先新版 API
         return templates.TemplateResponse(
-            request, "index.html",
+            request,
+            "index.html",
             {"version": read_version(), "platforms": get_config().platforms},
         )
     except TypeError:
         pass  # TODO: add proper error handling
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "version": read_version(),
-            "platforms": get_config().platforms,
-        })
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "version": read_version(),
+                "platforms": get_config().platforms,
+            },
+        )
 
 
 @app.get("/api/sample")
@@ -255,23 +260,23 @@ async def api_sample():
     if not SAMPLE_RESULT.exists():
         try:
             import asyncio
+
             proc = await asyncio.create_subprocess_exec(
-                sys.executable, str(PROJECT_ROOT / "tools" / "gen_sample.py"),
+                sys.executable,
+                str(PROJECT_ROOT / "tools" / "gen_sample.py"),
                 cwd=str(PROJECT_ROOT),
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
             try:
-                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
-            except asyncio.TimeoutError:
+                _stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+            except asyncio.TimeoutError as exc:
                 proc.kill()
                 await proc.wait()
-                raise TimeoutError("gen_sample.py 执行超时 (30s)")
+                raise TimeoutError("gen_sample.py 执行超时 (30s)") from exc
             if proc.returncode != 0:
                 err_msg = stderr.decode(errors="ignore").strip()
-                raise RuntimeError(
-                    f"gen_sample.py 退出码 {proc.returncode}: {err_msg}"
-                )
+                raise RuntimeError(f"gen_sample.py 退出码 {proc.returncode}: {err_msg}")
         except Exception as e:
             logger.warning("自动生成示例失败: %s", e)
             return JSONResponse({"error": "sample_not_ready: 示例数据生成失败，请稍后重试"}, status_code=500)
@@ -301,7 +306,7 @@ async def api_crawl(req: CrawlRequest):
     if len(keyword) < 1 or len(keyword) > 100:
         raise HTTPException(400, "关键词长度必须在 1-100 个字符之间")
     # 校验关键词内容 (仅允许中文、英文、数字、空格及常见标点)
-    if not re.match(r'^[\w\s\u4e00-\u9fff\-_.+/]+$', keyword):
+    if not re.match(r"^[\w\s\u4e00-\u9fff\-_.+/]+$", keyword):
         raise HTTPException(400, "关键词包含非法字符，仅允许中文、英文、数字及常见符号")
     cfg = get_config()
     # 验证平台
@@ -343,8 +348,7 @@ async def api_history(limit: int = 20):
     """历史关键词列表"""
     return {
         "total_records": db.count_total(),
-        "keywords": [{"keyword": k, "last_fetched": t}
-                     for k, t in db.list_keywords(limit)],
+        "keywords": [{"keyword": k, "last_fetched": t} for k, t in db.list_keywords(limit)],
     }
 
 
@@ -376,10 +380,7 @@ async def api_trend_keyword(keyword: str, days: int = 30):
     return {
         "keyword": keyword,
         "days": days,
-        "trends": [
-            {"url_hash": h, "points": [{"date": d, "price": p} for d, p in pts]}
-            for h, pts in trends.items()
-        ],
+        "trends": [{"url_hash": h, "points": [{"date": d, "price": p} for d, p in pts]} for h, pts in trends.items()],
     }
 
 
@@ -395,6 +396,7 @@ async def api_health():
 def main() -> int:
     """启动 uvicorn 服务"""
     import uvicorn
+
     cfg = get_config().web
     print(f"\n  电商商品价格采集与对比工具 v{read_version()}")
     print(f"  访问地址: http://localhost:{cfg.port}")

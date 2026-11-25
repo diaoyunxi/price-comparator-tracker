@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import math
 import re
-from typing import List, Tuple
 
 from core.models import Product
 
@@ -132,7 +131,7 @@ def clean_title(title: str) -> str:
 # ---------------------------------------------------------------------------
 # 主清洗函数
 # ---------------------------------------------------------------------------
-def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
+def clean_products(products: list[Product]) -> tuple[list[Product], dict]:
     """
     清洗、去重、排序商品列表
 
@@ -157,7 +156,7 @@ def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
     }
 
     # 1. 标准化
-    cleaned: List[Product] = []
+    cleaned: list[Product] = []
     for p in products:
         p.title = clean_title(p.title)
         p.price = parse_price(p.price)
@@ -176,7 +175,7 @@ def clean_products(products: List[Product]) -> Tuple[List[Product], dict]:
 
     # 3. 去重 (保留首次出现, 已按平台/标题归一化/价格档位)
     seen: set = set()
-    deduped: List[Product] = []
+    deduped: list[Product] = []
     for p in cleaned:
         if p.dedup_key in seen:
             stats["duplicates"] += 1
